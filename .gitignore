@@ -1,0 +1,11 @@
+Testing
+Release
+Debug
+_release*
+_debug*
+build
+.DS_Store
+*.exe
+*.obj
+*.o
+VersionNotes.txt
