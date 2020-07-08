@@ -51,9 +51,8 @@
    operator +=                                           (incremental addition)
    operator *(double alpha)                              (scalar multiplication)
 
-   axpy(double alpha, RKvector& x)                       (*this =  alpha*x + *this)
-   nrm2()                                                (2-norm of vector)
-   amax()                                                (maxAbs-norm of vector)
+   norm2()                                               (2-norm of vector)
+   normInf()                                             (maxAbs-norm of vector)
    
    ############################################################################
    
@@ -175,21 +174,21 @@ double getSolutionNorm2()
 //
 double getSolutionNormMaxAbs()
 {
-    return Yn.amax();
+    return Yn.normInf();
 }
 //
 // Returns the 2-norm of the residual.
 //
 double getResidualNorm2()
 {
-    return FYn.nrm2();
+    return FYn.norm2();
 }
 //
 // Returns the inf-norm of the residual.
 //
 double getResidualNormMaxAbs()
 {
-    return FYn.amax();
+    return FYn.normInf();
 }
 
 //

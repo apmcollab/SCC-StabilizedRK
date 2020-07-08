@@ -52,8 +52,8 @@ using std::max;
    operator *(double alpha)                              (scalar multiplication)
 
    axpy(double alpha, RKvector& x)   EE                    (*this =  alpha*x + *this)
-   nrm2()                                                (2-norm of vector)
-   amax()                                                (maxAbs-norm of vector)
+   norm2()                                                (2-norm of vector)
+   normInf()                                                (maxAbs-norm of vector)
    
    ############################################################################
    
@@ -161,28 +161,28 @@ RKvector getSolution()
 //
 double getSolutionNorm2()
 {
-	return Yn.nrm2();
+	return Yn.norm2();
 }
 //
 // Returns the inf-norm of the computed solution. 
 //
 double getSolutionNormMaxAbs()
 {
-	return Yn.amax();
+	return Yn.normInf();
 }
 //
 // Returns the 2-norm of the residual.
 //
 double getResidualNorm2()
 {
-	return FYn.nrm2();
+	return FYn.norm2();
 }
 //
 // Returns the inf-norm of the residual.
 //
 double getResidualNormMaxAbs()
 {
-	return FYn.amax();
+	return FYn.normInf();
 }
 
 //

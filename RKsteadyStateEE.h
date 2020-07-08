@@ -5,17 +5,6 @@
 // (C) UCLA 2012 
 //
 //
-// ############################################################
-// RKsteadyStateEE.h 
-//
-// April 14, 2009
-//
-// Convergence to steady state using stabilized RK methods
-// with a timestep chosen using Ekeland et.al. maximal 
-// eigenvalue detection.
-//
-//###############################################################
-//
 #include <cmath>
 #include <vector>
 using std::min;
@@ -28,11 +17,12 @@ using std::max;
 #include "RKEigEstimator.h"
 #include "SRKtimestepEstimator.h"
 
-#ifndef __RKsteadyStateEE__
-#define __RKsteadyStateEE__ 
+#ifndef RK_STEADYSTATE_EE_
+#define RK_STEADYSTATE_EE_
 /**
    A templated class for stabilized Runge-Kutta methods used to
-   compute steady state solutions.
+   compute steady state solutions with a timestep chosen using
+   Ekeland et.al. maximal eigenvalue detection.
 
    The minimal functionality required of the classes 
    that are used in this template
@@ -50,9 +40,8 @@ using std::max;
    operator +=                                           (incremental addition)
    operator *(double alpha)                              (scalar multiplication)
 
-   axpy(double alpha, RKvector& x)   EE                    (*this =  alpha*x + *this)
-   nrm2()                                                (2-norm of vector)
-   amax()                                                (maxAbs-norm of vector)
+   norm2()                                               (2-norm of vector)
+   normInf()                                             (Inf-norm of vector)
    
    ############################################################################
    
@@ -206,28 +195,28 @@ RKvector getSolution()
 //
 double getSolutionNorm2()
 {
-	return Yn.nrm2();
+	return Yn.norm2();
 }
 //
 // Returns the inf-norm of the computed solution. 
 //
 double getSolutionNormMaxAbs()
 {
-	return Yn.amax();
+	return Yn.normInf();
 }
 //
 // Returns the 2-norm of the residual.
 //
 double getResidualNorm2()
 {
-	return FYn.nrm2();
+	return FYn.norm2();
 }
 //
 // Returns the inf-norm of the residual.
 //
 double getResidualNormMaxAbs()
 {
-	return FYn.amax();
+	return FYn.normInf();
 }
 
 //
@@ -366,8 +355,7 @@ double computeInitialTimestep()
 	return dt;
 }
 
-int computeSteadyStateSolution(double dtInitial, long initialCount, 
-double dtMax, double tol, int errorType)
+int computeSteadyStateSolution(double dtInitial, double dtMax, double tol, int errorType)
 {
     this->initialDt       = dtInitial;
     this->maximalDtBound  = dtInitial;

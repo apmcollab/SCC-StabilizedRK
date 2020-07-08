@@ -83,7 +83,7 @@ double relTol,long powerMaxIter, long eulerStepCount)
     double eigEstOld;
     double Vnorm;
 
-    Vnorm   = Veig.nrm2();
+    Vnorm   = Veig.norm2();
     Veig   *= dtEuler/Vnorm;
 
     long powerCount = 1;
@@ -94,7 +94,7 @@ double relTol,long powerMaxIter, long eulerStepCount)
     Veig += Vstar;
     F.apply(Veig, Vtmp);
     Vtmp     -= FVstar;
-    Vnorm     = Vtmp.nrm2();
+    Vnorm     = Vtmp.norm2();
     eigEstOld = eigEst;
     eigEst    = Vnorm/eigEps;
     cout << setw(3) << powerCount << " " << setw(10) << eigEst << "  " << endl;
@@ -120,7 +120,7 @@ double getEulerStepNormRatio(double dt, RKvector& Vstar,  RKoperator& F)
 
     zeroInitialFlag = 0;
     FV.initialize(Vstar);
-    v0norm = Vstar.nrm2();
+    v0norm = Vstar.norm2();
     //
     // Determine if the initial state 
     // is identically zero
@@ -135,7 +135,7 @@ double getEulerStepNormRatio(double dt, RKvector& Vstar,  RKoperator& F)
     Vkp1.initialize(Vstar);
     F.apply(Vstar,FV);
     Vkp1.axpy(dt,FV);
-    v1norm = Vkp1.nrm2();
+    v1norm = Vkp1.norm2();
 
     if(zeroInitialFlag)
     {
@@ -143,7 +143,7 @@ double getEulerStepNormRatio(double dt, RKvector& Vstar,  RKoperator& F)
     F.apply(Vkp1,FV);
     Vkp2.axpy(dt,FV);
     v0norm = v1norm;
-    v1norm = Vkp2.nrm2();
+    v1norm = Vkp2.norm2();
     }
    
     normRatio = v1norm/v0norm;

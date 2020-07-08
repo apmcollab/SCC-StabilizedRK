@@ -119,9 +119,7 @@ DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, do
 int estimateEigenvalues(std::vector < Vector* > k, int stageScalingFlag, double stageScaling, 
 DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, double dt)
 {
-    double kNorm = 0.0;
     long   qSize = 0;
-
     
     long i; long j; long ii; long jj; long p;
  
@@ -130,7 +128,6 @@ DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, do
     // Create a QR factorization of [k_0, k_1, ....] until j = RKstageOrder or the 
     // the jth vector computed is linearly dependent on the previous vectors. 
     //
-    
 
     p = RKstageOrder;
     
@@ -152,7 +149,7 @@ DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, do
     q[j] *= stageScaling;
     }
     
-    kNorm  = sqrt(fabs(q[j].dot(q[j])));
+    //kNorm  = sqrt(fabs(q[j].dot(q[j])));
     for(i = 0; i < j; i++) 
     {
 		r(i,j) =  q[i].dot(q[j]);
