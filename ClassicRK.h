@@ -1,5 +1,4 @@
-#ifndef __ClassicRK__
-#define __ClassicRK__
+
 //
 //####################################################################
 //                    ClassicRK.h 
@@ -35,8 +34,11 @@
 // Chris Anderson (C) UCLA                               Feb. 23, 2006
 //#####################################################################
 //
-template <class State, class StateOperator>
-class ClassicRK
+
+#ifndef CLASSIC_RK_
+#define CLASSIC_RK_
+
+template <class State, class StateOperator> class ClassicRK
 {
 public :
     

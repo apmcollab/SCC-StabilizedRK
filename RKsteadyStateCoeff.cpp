@@ -18,11 +18,9 @@
 
 #include <iostream>
 #include <iomanip>
-using namespace std;
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
 
 void RKsteadyStateCoeff::getTchebyShiftFactors(double M, double gamma,
 double& delta, double& beta, RKpolynomialFunction& ChebyPoly)
@@ -40,7 +38,7 @@ double& delta, double& beta, RKpolynomialFunction& ChebyPoly)
     
     double tolerance = 1.0e-12;
     
-    if(fabs(gamma-2.0) > tolerance) 
+    if(std::abs(gamma-2.0) > tolerance)
     {
     if(gamma <  1.0) b = 2.0/gamma;
     if(gamma >= 1.0) b = gamma*2.0;
@@ -464,13 +462,13 @@ double PprimeCondition::getRoot(double* ax, double* bx, double *tol)
     fa = this->operator()(a);
     fb = this->operator()(b);
     
-    if(fabs(fa) < *tol) return a;
-    if(fabs(fb) < *tol) return b;
+    if(std::abs(fa) < *tol) return a;
+    if(std::abs(fb) < *tol) return b;
 /*     check that f(ax) and f(bx) have different signs */
     if (fa == 0. || fb == 0.) {
 	goto L20;
     }
-    if (fa * (fb / fabs(fb)) <= 0.) {
+    if (fa * (fb / std::abs(fb)) <= 0.) {
 	goto L20;
     }
 
@@ -487,7 +485,7 @@ L20:
     d__ = b - a;
     e = d__;
 L30:
-    if (fabs(fc) >= fabs(fb)) {
+    if (std::abs(fc) >= std::abs(fb)) {
 	goto L40;
     }
     a = b;
@@ -497,15 +495,15 @@ L30:
     fb = fc;
     fc = fa;
 L40:
-    tol1 = eps * 2. * fabs(b) + *tol * .5;
+    tol1 = eps * 2. * std::abs(b) + *tol * .5;
     xm = (c__ - b) * .5;
-    if (fabs(xm) <= tol1 || fb == 0.) {
+    if (std::abs(xm) <= tol1 || fb == 0.) {
 	goto L150;
     }
 
 /* see if a bisection is forced */
 
-    if (fabs(e) >= tol1 && fabs(fa) > fabs(fb)) {
+    if (std::abs(e) >= tol1 && std::abs(fa) > std::abs(fb)) {
 	goto L50;
     }
     d__ = xm;
@@ -541,8 +539,8 @@ L80:
 L90:
     s = e;
     e = d__;
-    if (p * 2. >= xm * 3. * q - (d__1 = tol1 * q, fabs(d__1)) || p >= (d__2 = 
-	    s * .5 * q, fabs(d__2))) {
+    if (p * 2. >= xm * 3. * q - (d__1 = tol1 * q, std::abs(d__1)) || p >= (d__2 =
+	    s * .5 * q, std::abs(d__2))) {
 	goto L100;
     }
     d__ = p / q;
@@ -553,7 +551,7 @@ L100:
 L110:
     a = b;
     fa = fb;
-    if (fabs(d__) <= tol1) {
+    if (std::abs(d__) <= tol1) {
 	goto L120;
     }
     b += d__;
@@ -568,7 +566,7 @@ L130:
     b -= tol1;
 L140:
     fb = this->operator()(b);
-    if (fb * (fc / fabs(fc)) > 0.) {
+    if (fb * (fc / std::abs(fc)) > 0.) {
 	goto L20;
     }
     goto L30;
@@ -800,22 +798,20 @@ RKpolynomialFunction RKpolynomialFunction::scale(double alpha)
      return R;
 }
 
-ostream& operator <<(ostream& outStream, const RKpolynomialFunction& P)
+std::ostream& operator <<(std::ostream& outStream, const RKpolynomialFunction& P)
 {
-    outStream.setf(ios::fixed);
+    outStream.setf(std::ios::fixed);
     outStream.precision(2);
     if(P.degree >= 0)
-    {outStream << setw(2) << P.a[0];}
+    {outStream << std::setw(2) << P.a[0];}
     int i;
     if(P.degree >= 1)
     {
     for(i = 1; i <= P.degree; i++)
-    {
-    outStream << " + " << setw(2) << P.a[i] << "x^";
-    outStream.setf(ios::left);
-    outStream << setw(2) << i;
-    outStream.setf(ios::right);
-    }
+    outStream << " + " << std::setw(2) << P.a[i] << "x^";
+    outStream.setf(std::ios::left);
+    outStream << std::setw(2) << i;
+    outStream.setf(std::ios::right);
     }
     return outStream;
 }

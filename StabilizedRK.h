@@ -13,8 +13,8 @@
 //
 #include "RKsteadyStateCoeff.h"
 
-#ifndef __StabilizedRK__
-#define __StabilizedRK__
+#ifndef STABILIZED_RK_
+#define STABILIZED_RK_
 /**
    A templated class for stabilized Runge-Kutta methods.
 

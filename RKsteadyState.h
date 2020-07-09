@@ -27,10 +27,10 @@
 #include "RKEigEstimator.h"
 #include "SRKtimestepEstimator.h"
 
-#include <math.h>
+#include <cmath>
 
-#ifndef __RKsteadyState__
-#define __RKsteadyState__
+#ifndef RK_STEADY_STATE_
+#define RK_STEADY_STATE_
 /**
    A templated class for stabilized Runge-Kutta methods used to
    compute steady state solutions.
@@ -450,7 +450,7 @@ int getMonotoneTimestep(double& currentDt, double& currentResidual,
     {
     if(reductionIncrement == 0)
     {
-    if(fabs(d3/currentResidual) < 1.0e-03){currentDt *= reduceFactor; reductionIncrement = 1;}
+    if(std::abs(d3/currentResidual) < 1.0e-03){currentDt *= reduceFactor; reductionIncrement = 1;}
     }
     }
      
@@ -576,7 +576,7 @@ int getClassicRKtimestep(double& currentDt, double& currentResidual,
 
     if(step >= 3) // check for constant iterations -- increase stepsize to induce damping
     {
-    if(fabs((d3/currentResidual)*(1.0/currentDt)) < 1.0e-02){currentDt *= 1.0/reduceFactor;}
+    if(std::abs((d3/currentResidual)*(1.0/currentDt)) < 1.0e-02){currentDt *= 1.0/reduceFactor;}
     }
 
     if(step >= 3)
@@ -713,14 +713,14 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
 //
 //  Stabilized RK method instance and parameters
 //
-    long                                       stageOrder;          
-    double                                          gamma;      
+    long                                     stageOrder;
+    double                                   gamma;
     StabilizedRK<RKvector, RKoperator >      stabilizedRKmethod; 
     ClassicRK <RKvector, RKoperator >        classicRK;
 //
 //  Adaptive method variables
 //
-    int          errorCheckType;
+    int         errorCheckType;
     long        evaluationCount; // ODE apply operator count 
     long        stepCount;
     double      totalTime;   
@@ -792,8 +792,7 @@ double getEstimatedTimestep(double dt,double maximalDtBound)
     // Note setting theta reduction factor = 0.0
     //
     thetaReductionFactor = 0.0;
-    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,Wreal.getDataPointer(),
-    Wimag.getDataPointer(), eigCount,maximalDtBound);
+    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,&Wreal[0], &Wimag[0], eigCount,maximalDtBound);
     return dtNew;
 }
 
@@ -838,8 +837,8 @@ double computeInitialTimestep(double dtInitial)
     return dt;
 }
     RKEigEstimator < RKvector >  rkEigEstimator;
-    DoubleArrayStructure1D Wreal;
-    DoubleArrayStructure1D Wimag;
+    std::vector<double> Wreal;
+    std::vector<double> Wimag;
     
     std::vector < RKvector* > stageArrayPointers;
     double stageScaling;

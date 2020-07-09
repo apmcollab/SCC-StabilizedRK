@@ -8,8 +8,8 @@
 #include <complex>
 
 
-#ifndef __RKStabilityPolynomialEvaluator__
-#define __RKStabilityPolynomialEvaluator__
+#ifndef RK_STABILITY_POLYNOMIAL_EVALUATOR_
+#define RK_STABILITY_POLYNOMIAL_EVALUATOR_
 
 class RKStabilityPolynomialEvaluator
 {

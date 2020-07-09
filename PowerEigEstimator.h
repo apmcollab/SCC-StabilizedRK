@@ -6,10 +6,11 @@
 //
 #include <iostream>
 #include <iomanip>
-using namespace std;
+#include <cmath>
 
-#ifndef __PowerEigEstimator__
-#define __PowerEigEstimator__
+
+#ifndef POWER_EIG_ESTIMATOR_
+#define POWER_EIG_ESTIMATOR_
 //
 // Class PowerEigEstimator
 //
@@ -97,10 +98,10 @@ double relTol,long powerMaxIter, long eulerStepCount)
     Vnorm     = Vtmp.norm2();
     eigEstOld = eigEst;
     eigEst    = Vnorm/eigEps;
-    cout << setw(3) << powerCount << " " << setw(10) << eigEst << "  " << endl;
+    std::cout << std::setw(3) << powerCount << " " << std::setw(10) << eigEst << "  " << std::endl;
     Veig  = Vtmp;
     Veig *= eigEps/Vnorm;
-    if(powerCount > 1) {if(fabs(eigEst/eigEstOld -1.0) < relTol) doneFlag = 1;}
+    if(powerCount > 1) {if(std::abs(eigEst/eigEstOld -1.0) < relTol) doneFlag = 1;}
     powerCount++;
     }
     
@@ -125,7 +126,7 @@ double getEulerStepNormRatio(double dt, RKvector& Vstar,  RKoperator& F)
     // Determine if the initial state 
     // is identically zero
     //
-    if(fabs(v0norm) < 1.0e-12)
+    if(std::abs(v0norm) < 1.0e-12)
     {
     zeroInitialFlag = 1; Vkp2.initialize(Vstar);
     }

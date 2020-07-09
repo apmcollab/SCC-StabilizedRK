@@ -16,11 +16,10 @@
 
 #include <iostream>
 #include <iomanip>
-using namespace std;
 
 
-#ifndef __RKsteadyStateCoeff__
-#define __RKsteadyStateCoeff__
+#ifndef RK_STEADY_STATE_COEFF_
+#define RK_STEADY_STATE_COEFF_
 
 class RKpolynomialFunction 
 {
@@ -68,8 +67,7 @@ class RKpolynomialFunction
 //
 //  Input/Output
 //
-    friend ostream&  
-    operator <<(ostream& outStream, const RKpolynomialFunction& A);
+    friend std::ostream& operator <<(std::ostream& outStream, const RKpolynomialFunction& A);
 //
 //  Class data
 //
@@ -151,20 +149,19 @@ class RKsteadyStateCoeff
 {
     public:
 
-    static void getRKcoefficients(long stageOrder, double gamma, 
-    double** alphaCoeff);
+    static void getRKcoefficients(long stageOrder, double gamma, double** alphaCoeff);
 
-    static double** getRKcoefficientsPtr(long stageOrder, 
+    static double** getRKcoefficientsPtr(long stageOrder,
     double gamma);
 
     private:
 
-    static void getTchebyShiftFactors(double M, double gamma, double& delta, 
+    static void getTchebyShiftFactors(double M, double gamma, double& delta,
     double& beta,RKpolynomialFunction& Cheby);
 
     static void backSolve(long N, double* c, double** A);
     static void create2Darray(double**& a, long m, long n);
-    static void delete2Darray(double**& a); 
+    static void delete2Darray(double**& a);
 
     static RKcoefficients** coeffCache;
     static long cacheSize;

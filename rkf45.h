@@ -6,13 +6,12 @@
 //
 
 #include <cmath>
+#include <cstdlib>
+#include <cstdio>
 
-#include "stdlib.h"
-#include "stdio.h"
 
-
-#ifndef _rkf45_
-#define _rkf45_
+#ifndef RKF_45_
+#define RKF_45_
 
 /* Transation of rkf45.f  by f2c and then refactored into a
    C++ templated class

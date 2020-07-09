@@ -19,18 +19,15 @@
 //
 #include <cmath>
 #include <vector>
-using std::min;
-using std::max;
 
-#include "ArrayStructure1D.h"
 #include "RKsteadyStateCoeff.h"
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
 #include "RKEigEstimator.h"
 #include "SRKtimestepEstimator.h"
 
-#ifndef __RKsteadyStateFixedStepEE__
-#define __RKsteadyStateFixedStepEE__ 
+#ifndef RK_STEADY_STATE_FIXED_STEP_EE
+#define RK_STEADY_STATE_FIXED_STEP_EE
 /**
    A templated class for stabilized Runge-Kutta methods used to
    compute steady state solutions.
@@ -251,8 +248,7 @@ double getTimestep(double dt,double maximalDtBound)
 	// Note setting theta reduction factor = 0.0
 	//
 	thetaReductionFactor = 0.0;
-    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,Wreal.getDataPointer(),
-    Wimag.getDataPointer(), eigCount,maximalDtBound);
+    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,&Wreal[0], &Wimag[0], eigCount,maximalDtBound);
 	return dtNew;
 }
 
@@ -342,10 +338,10 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
 //
 //  Stabilized RK method instance and parameters
 //
-    long                                       stageOrder;          
-    double                                          gamma;      
+    long                                     stageOrder;
+    double                                   gamma;
     StabilizedRK<RKvector, RKoperator >      stabilizedRKmethod; 
-    ClassicRK <RKvector, RKoperator >        classicRK;
+    ClassicRK <RKvector,   RKoperator >      classicRK;
 //
 //  Adaptive method variables
 //
@@ -362,8 +358,8 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     
     
     RKEigEstimator < RKvector >  rkEigEstimator;
-    DoubleArrayStructure1D Wreal;
-	DoubleArrayStructure1D Wimag;
+    std::vector<double> Wreal;
+	std::vector<double> Wimag;
 	long eigCount;
 	
     std::vector < RKvector* > stageArrayPointers;

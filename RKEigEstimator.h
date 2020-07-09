@@ -6,7 +6,7 @@
 //
 #include <cmath>
 #include <vector>
-using namespace std;
+
 
 #include "GenEigUtility.h"
 #include "SVDutility.h"
@@ -15,8 +15,8 @@ using namespace std;
 #include "DynamicVectorArray.h"
 
 
-#ifndef _RKEigEstimator_
-#define _RKEigEstimator_
+#ifndef RK_EIG_ESTIMATOR_
+#define RK_EIG_ESTIMATOR_
 
 //
 /* 
@@ -51,7 +51,7 @@ using namespace std;
 // Here a(i,j) are the Runge-Kutta stage coefficents. The final accumulation 
 // coefficients b(j) are not used.
 //
-// Note that the stage vectors k[i] are not multiplied by dt in this 
+// Note that the stage std::vectors k[i] are not multiplied by dt in this
 // representation of the Runge-Kutta method. 
 // 
 
@@ -84,7 +84,7 @@ public:
 // form described in above. 
 // 
 // The ith column of this matrix corresponds to the coefficients used to 
-// accumulate the ith stage vector. 
+// accumulate the ith stage vector.
 // 
 void initialize(long RKstageOrder, DoubleArrayStructure2D& RKcoefficients)
 {
@@ -101,8 +101,9 @@ void initialize(long RKstageOrder, DoubleArrayStructure2D& RKcoefficients)
 // The input stages are defined without a dt multiplicative factor, e.g.
 // k[i] = f(y_n + dt*(sum_(j< i) a_(i,j)*k[j] )
 
-int estimateEigenvalues(std::vector < Vector* > k, DoubleArrayStructure1D& Wreal,
-DoubleArrayStructure1D& Wimag, long& eigCount, double dt)
+int estimateEigenvalues(std::vector < Vector* > k,
+std::vector<double>& Wreal, std::vector<double>& Wimag,
+long& eigCount, double dt)
 {
 	int stageScalingFlag = 0;
 	double stageScaling  = 0.0;
@@ -110,14 +111,14 @@ DoubleArrayStructure1D& Wimag, long& eigCount, double dt)
 }
 
 int estimateEigenvalues(std::vector < Vector* > k, double stageScaling, 
-DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, double dt)
+std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double dt)
 {
 	int stageScalingFlag = 1;
 	return estimateEigenvalues(k,stageScalingFlag, stageScaling, Wreal, Wimag, eigCount,dt);
 }
 
 int estimateEigenvalues(std::vector < Vector* > k, int stageScalingFlag, double stageScaling, 
-DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, double dt)
+std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double dt)
 {
     long   qSize = 0;
     
@@ -366,9 +367,13 @@ DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, do
 //  routine that assumes the input matrix is in upper-Hessenberg form.
 // 
 	eigCount = hSize;
-	Wreal.initialize(hSize);
-    Wimag.initialize(hSize);
-    
+
+	Wreal.clear();
+	Wreal.resize(hSize);
+
+	Wimag.clear();
+	Wimag.resize(hSize);
+
     long info;
     
     /*
@@ -385,14 +390,13 @@ DoubleArrayStructure1D& Wreal, DoubleArrayStructure1D& Wimag, long& eigCount, do
         }
     */ 
     
-	info = GenEigUtility::computeEigenvalues(Ht.getDataPointer(),hSize,
-	Wreal.getDataPointer(), Wimag.getDataPointer());
+	info = GenEigUtility::computeEigenvalues(Ht.getDataPointer(),hSize, &Wreal[0], &Wimag[0]);
 	
 	
 	for(i = 0; i < eigCount; i++)
 	{
-	Wreal(i)*= 1.0/dt;
-    Wimag(i)*= 1.0/dt; 
+	Wreal[i]*= 1.0/dt;
+    Wimag[i]*= 1.0/dt;
 	}
 	return info;
 }

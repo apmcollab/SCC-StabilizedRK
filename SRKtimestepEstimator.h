@@ -7,15 +7,14 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
-using namespace std;
+#include <cmath>
 
-#include "math.h"
 #include "RKStabilityPolynomialEvaluator.h"
 #include "rkf45.h"
 
 
-#ifndef _SRKtimestepEstimator_
-#define _SRKtimestepEstimator_
+#ifndef SRK_TIMESTEP_ESTIMATOR_
+#define SRK_TIMESTEP_ESTIMATOR_
 
 
 class SRKstabilityContourODE
@@ -205,7 +204,7 @@ class SRKtimestepEstimator
 	// Check for zero lambda -- return maximalDtBound
 	//
 	
-	if((fabs(lambdaReal) < zeroVal)&&(fabs(lambdaImag) < zeroVal))
+	if((std::abs(lambdaReal) < zeroVal)&&(std::abs(lambdaImag) < zeroVal))
     {
     return maximalDtBound;
     }
@@ -223,17 +222,17 @@ class SRKtimestepEstimator
 //
 	n = angleVariable.size();
 	
-	if(fabs(lambdaImag) < zeroVal) 
+	if(std::abs(lambdaImag) < zeroVal)
 	{
-	return stabilityBound[n-1]/fabs(lambdaReal);
+	return stabilityBound[n-1]/std::abs(lambdaReal);
 	}
 //
 //  flip input value to quadrant II if required.
 //
     if(lambdaImag < 0.0) lambdaImag *= -1.0;
     
-	angleVar            = atan2(lambdaImag,lambdaReal)/(3.141592653589793238);
-	lambdaNorm          = sqrt(lambdaReal*lambdaReal + lambdaImag*lambdaImag);
+	angleVar            = std::atan2(lambdaImag,lambdaReal)/(3.141592653589793238);
+	lambdaNorm          = std::sqrt(lambdaReal*lambdaReal + lambdaImag*lambdaImag);
 //
 //  Use bisection to find table entries bracketing the angle value
 //
@@ -242,7 +241,7 @@ class SRKtimestepEstimator
     long c = (a+b)/2;
     int istop = 0;
     
-    if(fabs(angleVar - angleVariable[a]) < zeroVal) istop = 2;
+    if(std::abs(angleVar - angleVariable[a]) < zeroVal) istop = 2;
     while(istop == 0)
     {
     if(angleVar < angleVariable[c])
@@ -256,7 +255,7 @@ class SRKtimestepEstimator
        a = c;
        c = (a+b)/2;
        if(c == a) istop = 1;
-       if(fabs(angleVar - angleVariable[a]) < zeroVal) istop = 2;
+       if(std::abs(angleVar - angleVariable[a]) < zeroVal) istop = 2;
     }
     }
     
@@ -271,7 +270,7 @@ class SRKtimestepEstimator
 	return timestep; 
     }
 
-    void getStabilityBoundaryData(vector<double>& xBdry, vector<double>& yBdry)
+    void getStabilityBoundaryData(std::vector<double>& xBdry, std::vector<double>& yBdry)
     {
     xBdry = zReal;
     yBdry = zReal;
@@ -378,11 +377,11 @@ class SRKtimestepEstimator
     long stageOrder;
     double gamma;
     
-    vector<double> zReal;
-    vector<double> zImag;
+    std::vector<double> zReal;
+    std::vector<double> zImag;
     
-    vector<double>  angleVariable;
-    vector<double> stabilityBound;
+    std::vector<double>  angleVariable;
+    std::vector<double> stabilityBound;
     
     SRKstabilityContourODE stabilityContourODE;
     RKStabilityPolynomialEvaluator stabilityPoly;

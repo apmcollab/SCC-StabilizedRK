@@ -7,10 +7,7 @@
 //
 #include <cmath>
 #include <vector>
-using std::min;
-using std::max;
 
-#include "ArrayStructure1D.h"
 #include "RKsteadyStateCoeff.h"
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
@@ -279,8 +276,7 @@ double getTimestep(double dt)
 
 	estimateEigenSystem(dt);
     if(eigEstFlag == 1){srkTimestepEstimator->setVerboseFlag(1);}
-    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,
-    Wreal.getDataPointer(),Wimag.getDataPointer(), eigCount,maximalDtBound);
+    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor, &Wreal[0],&Wimag[0], eigCount,maximalDtBound);
     dtNew *= dtMaxReductionFactor;
 
     //
@@ -568,8 +564,8 @@ double dtMax, double tol, int errorCheckType)
     
     
     RKEigEstimator < RKvector >  rkEigEstimator;
-    DoubleArrayStructure1D Wreal;
-	DoubleArrayStructure1D Wimag;
+    std::vector<double> Wreal;
+    std::vector<double> Wimag;
 	long eigCount;
 	
     std::vector < RKvector* > stageArrayPointers;
