@@ -191,7 +191,7 @@ double dt, RKvector &Yout, RKvector& FYout)
    long i; long k;
 
    createStageTemporaries(sOrder);
-   alphaCoeff  = RKsteadyStateCoeff::getRKcoefficientsPtr(sOrder, sFactor);
+   alphaCoeff  = rkSteadyStateCoeff.getRKcoefficientsPtr(sOrder, sFactor);
 
    *FYk[0] = FYin;
    *FYk[0] *= dt;
@@ -304,6 +304,9 @@ double getResidualNormMaxAbs()
     
     RKvector           FYnsave; // Roll-back temporaries
     RKvector           Ynsave;  // 
+
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
 };
 #endif
 

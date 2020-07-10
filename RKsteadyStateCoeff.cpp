@@ -101,7 +101,7 @@ RKcoefficients::RKcoefficients(long stageOrder, double gamma)
     alphaCoeff   = new double*[stageOrder];
     for(i = 0; i < stageOrder; i++) alphaCoeff[i] = new double[stageOrder];
 
-    RKsteadyStateCoeff::getRKcoefficients(stageOrder, gamma, alphaCoeff);
+    rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma, alphaCoeff);
 }
 
 RKcoefficients::~RKcoefficients()
@@ -115,15 +115,30 @@ RKcoefficients::~RKcoefficients()
     }
 }
 
+
+
 //
 // RKsteadyStateCoeff Static initializer
 //
+RKsteadyStateCoeff::RKsteadyStateCoeff()
+{
+	cacheStorageSize       = 100;
+	coeffCache             = new RKcoefficients*[100];
+	cacheSize              = 0;
+	cacheStorageIncrement  = 100;
+}
 
-long             RKsteadyStateCoeff::cacheStorageSize       = 100;
-RKcoefficients** RKsteadyStateCoeff::coeffCache             = new RKcoefficients*[100];
-long             RKsteadyStateCoeff::cacheSize              = 0;
-long             RKsteadyStateCoeff::cacheStorageIncrement  = 100;
+RKsteadyStateCoeff::~RKsteadyStateCoeff()
+{
+	if(coeffCache != 0)
+	{
 
+    for(int i = 0; i < cacheSize; i++)
+    {delete coeffCache[i];}
+
+	delete [] coeffCache;
+	}
+}
 
 double** RKsteadyStateCoeff::getRKcoefficientsPtr(long stageOrder, 
 double gamma)

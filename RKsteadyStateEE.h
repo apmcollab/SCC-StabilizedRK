@@ -241,7 +241,7 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 // 
 //  Set up RKEigEstimator 
 // 
-  double** alphaPtr = RKsteadyStateCoeff::getRKcoefficientsPtr(rkStageOrder, rkGammaFactor);
+  double** alphaPtr = rkSteadyStateCoeff.getRKcoefficientsPtr(rkStageOrder, rkGammaFactor);
 	long i; long j; 
 	
 	DoubleArrayStructure2D RKcoefficients(rkStageOrder-1,rkStageOrder-1);
@@ -563,6 +563,9 @@ double dtMax, double tol, int errorCheckType)
     int            outputFlag;  // flag indicating the invocation of state output 
     
     
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
+
     RKEigEstimator < RKvector >  rkEigEstimator;
     std::vector<double> Wreal;
     std::vector<double> Wimag;

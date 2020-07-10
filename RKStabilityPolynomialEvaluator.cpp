@@ -21,7 +21,7 @@ RKStabilityPolynomialEvaluator::RKStabilityPolynomialEvaluator(long stageOrder, 
     this->gamma      = gamma;
     FYk              = new double[stageOrder];
     ZYk              = new std::complex< double >[stageOrder];
-    alphaCoeff       = RKsteadyStateCoeff::getRKcoefficientsPtr(stageOrder,gamma);
+    alphaCoeff       = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder,gamma);
 }
 
 void RKStabilityPolynomialEvaluator::initialize()
@@ -43,7 +43,7 @@ void RKStabilityPolynomialEvaluator::initialize(long stageOrder, double gamma)
     if(ZYk != 0)delete [] ZYk;
     FYk              = new double[stageOrder];
     ZYk              = new std::complex<double>[stageOrder];
-    alphaCoeff       = RKsteadyStateCoeff::getRKcoefficientsPtr(stageOrder,gamma);
+    alphaCoeff       = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder,gamma);
 }
 
 RKStabilityPolynomialEvaluator::~RKStabilityPolynomialEvaluator()

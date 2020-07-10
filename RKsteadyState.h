@@ -717,6 +717,8 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
     double                                   gamma;
     StabilizedRK<RKvector, RKoperator >      stabilizedRKmethod; 
     ClassicRK <RKvector, RKoperator >        classicRK;
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
 //
 //  Adaptive method variables
 //
@@ -754,7 +756,7 @@ void initializeEigRoutines()
 // 
 //  Set up RKEigEstimator 
 // 
-    double** alphaPtr = RKsteadyStateCoeff::getRKcoefficientsPtr(stageOrder, gamma);
+    double** alphaPtr = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder, gamma);
     long i; long j; 
     
     DoubleArrayStructure2D RKcoefficients(stageOrder-1,stageOrder-1);

@@ -131,6 +131,37 @@ class PprimeCondition
 };
 
 
+
+class RKcoefficients;
+
+class RKsteadyStateCoeff
+{
+    public:
+
+    RKsteadyStateCoeff();
+    ~RKsteadyStateCoeff();
+
+    void getRKcoefficients(long stageOrder, double gamma, double** alphaCoeff);
+
+    double** getRKcoefficientsPtr(long stageOrder, double gamma);
+
+    private:
+
+    void getTchebyShiftFactors(double M, double gamma, double& delta,
+    double& beta,RKpolynomialFunction& Cheby);
+
+    void backSolve(long N, double* c, double** A);
+    void create2Darray(double**& a, long m, long n);
+    void delete2Darray(double**& a);
+
+    RKcoefficients** coeffCache;
+    long cacheSize;
+    long cacheStorageSize;
+    long cacheStorageIncrement;
+    void expandCache(long storageIncrement);
+};
+
+
 class RKcoefficients
 {
     public :
@@ -143,31 +174,8 @@ class RKcoefficients
     long     stageOrder;
     double        gamma;
     double** alphaCoeff;
-};
 
-class RKsteadyStateCoeff
-{
-    public:
-
-    static void getRKcoefficients(long stageOrder, double gamma, double** alphaCoeff);
-
-    static double** getRKcoefficientsPtr(long stageOrder,
-    double gamma);
-
-    private:
-
-    static void getTchebyShiftFactors(double M, double gamma, double& delta,
-    double& beta,RKpolynomialFunction& Cheby);
-
-    static void backSolve(long N, double* c, double** A);
-    static void create2Darray(double**& a, long m, long n);
-    static void delete2Darray(double**& a);
-
-    static RKcoefficients** coeffCache;
-    static long cacheSize;
-    static long cacheStorageSize;
-    static long cacheStorageIncrement;
-    static void expandCache(long storageIncrement);
+    RKsteadyStateCoeff rkSteadyStateCoeff;
 };
 
 

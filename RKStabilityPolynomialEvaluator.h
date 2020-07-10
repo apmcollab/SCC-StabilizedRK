@@ -35,6 +35,8 @@ public :
     double    gamma;
     
     std::complex < double >* ZYk;
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
 };
 #endif
 
