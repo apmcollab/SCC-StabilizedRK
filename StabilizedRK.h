@@ -66,16 +66,16 @@ public :
 //              (1-3) methods work best, while high order methods
 //              (4-10) work better for mildly stiff, or stiff equations.
 //
-// gamma      = The factor that determinines the size of the stability 
+// RKgamma    = The factor that determinines the size of the stability
 //              region and the magnitude of the damping associated with of the
-//              stabilized method. (0 < gamma < 2.0) The stability interval is 
-//              [-gamma*stageOrder*stageOrder, 0]. 
+//              stabilized method. (0 < RKgamma < 2.0) The stability interval is
+//              [-RKgamma*stageOrder*stageOrder, 0].
 //
-//              Larger gamma gives methods with larger stability regions, but
-//              smaller damping; while smaller gamma gives smaller stability 
+//              Larger RKgamma gives methods with larger stability regions, but
+//              smaller damping; while smaller RKgamma gives smaller stability
 //              regions with more damping. 
 //
-//              Good values for gamma are 1.5 <= gamma <= 1.75. 
+//              Good values for RKgamma are 1.5 <= RKgamma <= 1.75.
 //   
 //
 
@@ -90,7 +90,7 @@ StabilizedRK()
 StabilizedRK(const StabilizedRK& R)
 {
 	stageOrder  = R.stageOrder;
-	gamma       = R.gamma;
+	RKgamma     = R.RKgamma;
 	alphaCoeff  = R.alphaCoeff;
 
 	ODEoperator = R.ODEoperator;
@@ -105,9 +105,9 @@ StabilizedRK(const StabilizedRK& R)
     Ynsave.initialize(R.Ynsave);
 }
 
-StabilizedRK(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
+StabilizedRK(long stageOrder, double RKgamma, RKvector& y0, RKoperator& F)
 {
-	initialize(stageOrder,gamma,y0,F);
+	initialize(stageOrder,RKgamma,y0,F);
 }
 
 
@@ -117,7 +117,7 @@ StabilizedRK(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
 void initialize()
 {
     stageOrder = 0;
-    gamma      = 0;
+    RKgamma    = 0;
     alphaCoeff.clear();
 
     rkSteadyStateCoeff.initialize();
@@ -134,10 +134,10 @@ void initialize()
     FYnsave.initialize();
     Ynsave.initialize();
 }
-void initialize(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
+void initialize(long stageOrder, double RKgamma, RKvector& y0, RKoperator& F)
 {
     this->stageOrder = stageOrder;
-    this->gamma      = gamma;
+    this->RKgamma    = RKgamma;
 
     evaluationCount  = 0;
  
@@ -153,7 +153,7 @@ void initialize(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
     FYnsave.initialize(FYn);
 
    createStageTemporaries(stageOrder);
-   rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma, alphaCoeff);
+   rkSteadyStateCoeff.getRKcoefficients(stageOrder, RKgamma, alphaCoeff);
 }
 
 void createStageTemporaries(long stageOrder)
@@ -166,6 +166,7 @@ void setInitialCondition(RKvector &Y0)
 {
   Yn      = Y0;
   applyOp(Yn, FYn);
+
   Ynsave  = Yn; 
   FYnsave = FYn;
 }
@@ -179,18 +180,18 @@ void advance(double dt)
 {
     Ynsave  = Yn;     
     FYnsave = FYn;
-    advance(Ynsave, FYnsave, stageOrder, gamma, dt, Yn, FYn);
+    advance(Ynsave, FYnsave, stageOrder, RKgamma, dt, Yn, FYn);
 }
 
 void advance(RKvector &Yin,  RKvector& FYin, double dt, RKvector &Yout, RKvector& FYout)
 {
-    advance(Yin, FYin, stageOrder, gamma, dt, Yout, FYout);
+    advance(Yin, FYin, stageOrder, RKgamma, dt, Yout, FYout);
 }
 
 double advance(RKvector& Yin, double dt, RKvector &Yout, RKvector& FYout)
 {
     applyOp(Yin, FYn);
-    advance(Yin, FYn, stageOrder, gamma, dt, Yout, FYout);
+    advance(Yin, FYn, stageOrder, RKgamma, dt, Yout, FYout);
     return FYout.norm2();
 }
 //
@@ -201,12 +202,12 @@ double dt, RKvector &Yout, RKvector& FYout)
 {
    long i; long k;
 
-   if((sOrder != stageOrder)||(sFactor != gamma))
+   if((sOrder != stageOrder)||(sFactor != RKgamma))
    {
    createStageTemporaries(sOrder);
    rkSteadyStateCoeff.getRKcoefficients(sOrder, sFactor, alphaCoeff);
    stageOrder = sOrder;
-   gamma      = sFactor;
+   RKgamma      = sFactor;
    }
 
    FYk[0] = FYin;
@@ -305,8 +306,8 @@ double getResidualNormMaxAbs()
 //  Class variables for RK evolution 
 //
     long  stageOrder;             // Stage order (number of stages )
-    double     gamma;             // Stability region from [-gamma*stageOrder*stageOrder,0].
-                                  // Need gamma <= 2
+    double     RKgamma;             // Stability region from [-gamma*stageOrder*stageOrder,0].
+                                  // Need RKgamma <= 2
     
     std::vector<std::vector<double>> alphaCoeff; // RK stage coefficients
 

@@ -24,9 +24,6 @@
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
 
-#include "RKEigEstimator.h"
-#include "SRKtimestepEstimator.h"
-
 #include <cmath>
 
 #ifndef RK_STEADY_STATE_
@@ -80,16 +77,12 @@ RKsteadyState() : stabilizedRKmethod()
     stepCount       = 0;
     totalTime       = 0.0;
     initializeAdaptiveVariables();
-
-    srkTimestepEstimator = nullptr;
-    eigEstFlag           = 0;
     errorCheckType       = INFNORM;
-    dtMaxReductionFactor = 0.95;
 }
 
 ~RKsteadyState()
 {
-    if(srkTimestepEstimator != nullptr) delete  srkTimestepEstimator;
+   // if(srkTimestepEstimator != nullptr) delete  srkTimestepEstimator;
 }
 
 void initialize(long stageOrder, double gamma, 
@@ -115,10 +108,7 @@ RKvector& y0, RKoperator& F)
     Ynsave.initialize(Yn);       // Initialize rollback variables 
     FYnsave.initialize(FYn);
     
-    initializeEigRoutines();
-
     errorCheckType = INFNORM;
-    dtMaxReductionFactor = 0.95;
 }
 
 //
@@ -489,10 +479,10 @@ long maxReductions,int errorCheckType, double& finalTimestep)
         getMonotoneTimestep(dt,residualNorm,reductionIncrement,reduceFactor);
         reductionCount += reductionIncrement;
         stabilizedRKmethod.advance(Yn,FYn,dt,Yn,FYn);
-        if(eigEstFlag == 1)
-        {
-        printf(" Estimated Timestep   : %4.4e \n",getEstimatedTimestep(dt,maximalDtBound));
-        }
+        //if(eigEstFlag == 1)
+        //{
+        //printf(" Estimated Timestep   : %4.4e \n",getEstimatedTimestep(dt,maximalDtBound));
+        //}
         totalTime += dt;
         stepCount++;
 
@@ -511,27 +501,6 @@ long maxReductions,int errorCheckType, double& finalTimestep)
         ODEoperator->output(getStepCount(),totalTime,residualNorm,Yn);
         }
     }
-//
-// Testing ... continuing with a fixed step to see if it is oscillatory ...
-/*
-
-        while((stepCount < stepMax)&&(residualNorm > tol))
-        {
-        stabilizedRKmethod.advance(Yn,FYn,dt,Yn,FYn);
-        totalTime += dt;
-        stepCount++;
-
-        if(errorCheckType == INFNORM)
-        {residualNorm   = getResidualNormMaxAbs();}
-        else
-        {residualNorm   = getResidualNorm2();}
-        
-        if(verboseFlag != 0)
-        {
-        printf("%-3ld  %4.4e  %4.4e  \n",stepCount, dt, residualNorm);
-        }
-       }
-*/
 
 
     if(verboseFlag != 0)
@@ -743,123 +712,6 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
 
     int           verboseFlag;  // verbose output flag
     int            outputFlag;  // flag indicating the invocation of state output 
-//
-//#################################################################################
-//  Added for eigenvalue estimation and a-postiori timestep size estimation
-//#################################################################################
-
-void setEigEstOutputFlag(int flagVal)
-{eigEstFlag = flagVal;}
-
-void initializeEigRoutines()
-{
-// 
-//  Set up RKEigEstimator 
-// 
-    std::vector<std::vector<double>> alphaCoeff;
-
-    rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma,alphaCoeff);
-
-    std::vector< std::vector<double> > RKcoefficients;
-
-    RKcoefficients.resize((long)(stageOrder-1));
-    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(stageOrder-1,0.0);}
-
-    for(size_t i = 0; i < stageOrder-1; i++)
-    {
-    for(size_t j = 0; j < stageOrder-1; j++)
-    {
-        RKcoefficients[i][j]    = alphaCoeff[i][j];
-    }}
-    
-    rkEigEstimator.initialize(stageOrder,RKcoefficients);
-
-    if(srkTimestepEstimator != nullptr) delete  srkTimestepEstimator;
-    srkTimestepEstimator = new SRKtimestepEstimator(stageOrder,gamma);
-}
-
-void estimateEigenSystem(double dt)
-{
-    long   i;
-    int info;
-    
-    stageArrayPointers.clear();
-    for(i = 0; i < stageOrder; i++) 
-    {
-    stageArrayPointers.push_back(&stabilizedRKmethod.FYk[i]);
-    }
-    stageScaling = 1.0/dt;
-    rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
-}
-
-double getEstimatedTimestep(double dt,double maximalDtBound)
-{
-    double dtNew;
-    estimateEigenSystem(dt);
-    if(eigEstFlag == 1){srkTimestepEstimator->setVerboseFlag(1);}
-    //
-    // Note setting theta reduction factor = 0.0
-    //
-    thetaReductionFactor = 0.0;
-    dtNew = srkTimestepEstimator->evaluateMaximalTimestep(thetaReductionFactor,&Wreal[0], &Wimag[0], eigCount,maximalDtBound);
-    return dtNew;
-}
-
-
-double computeInitialTimestep(double dtInitial)
-{
-    double dt;
-    double dtNew;
-//
-//  Evolve the system one timestep to get an initial timestep estimate. If
-//  the timestep estimate is smaller than dtInitial, then roll back the solution
-//  and return the reduced timestep.
-//
-    dt = dtInitial;
-    if(verboseFlag != 0)
-    {
-        printf("XXXX     Initial Timestep Determination     XXXX\n");
-    }
-    Ynsave  = Yn;
-    FYnsave = FYn;
-    stabilizedRKmethod.advance(Yn,FYn,dt,Yn,FYn);
-    dtNew   = getEstimatedTimestep(dt,2.0*dtInitial);
-    if(dtNew < dt)  // roll back
-    {
-    Yn  = Ynsave;
-    FYn = FYnsave;
-    dt  = dtNew;
-    }
-    else
-    {
-    dt         = dtInitial;
-    totalTime += dt;
-    }
-    if(verboseFlag != 0)
-    {printf("\nXXXX     Starting dt found  %4.4e     XXXX\n\n",dt);}
-
-    if(errorCheckType == INFNORM)
-    {residualNorm   = getResidualNormMaxAbs();}
-    else
-    {residualNorm   = getResidualNorm2();}
-
-    return dt;
-}
-
-
-    RKEigEstimator < RKvector >  rkEigEstimator;
-    std::vector<double> Wreal;
-    std::vector<double> Wimag;
-    
-    std::vector < RKvector* > stageArrayPointers;
-    double stageScaling;
-    SRKtimestepEstimator* srkTimestepEstimator;
-    double    dtMaxReductionFactor;
-    double thetaReductionFactor;
-    int    eigEstFlag;
-    long   eigCount;
-    
-
 };
 #endif
 

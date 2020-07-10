@@ -95,37 +95,7 @@ void initialize(long RKstageOrder, std::vector< std::vector<double> >& RKcoeffic
 	// Coefficients packed in format specified by Ekeland's paper
 	
 
-    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
-
-    for(long j = 0; j < RKcoefficients.size(); j++)
-    {
-    for(long i = 0; i < RKcoefficients.size(); i++)
-    {
-    std::cout << RKcoefficients[i][j] << " ";
-    }
-    std::cout <<"\n";
-    }
-
-    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
-
-
-
 	A1.initialize(RKcoefficients);
-
-	std::cout << "ggggggggggggggggggggggg" << std::endl;
-
-    for(long j = 0; j < RKcoefficients.size(); j++)
-    {
-    for(long i = 0; i < RKcoefficients.size(); i++)
-    {
-    std::cout << A1(i,j) << " ";
-    }
-    std::cout <<"\n";
-    }
-
-    std::cout << "ggggggggggggggggg" << std::endl;
-
-
 
 	r.initialize(RKstageOrder,RKstageOrder);
 }

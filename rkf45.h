@@ -205,7 +205,7 @@ double d_sign(double *a, double *b)
 int rkf45_(long *neqn, double *y, double*t, double *tout, double *relerr, double *abserr, 
 long*iflag, double *work, long *iwork)
 {
-    static long k1, k2, k3, k4, k5, k6, k1m;
+     long k1, k2, k3, k4, k5, k6, k1m;
 
 /*     fehlberg fourth-fifth order runge-kutta method */
 
@@ -423,22 +423,22 @@ int rkfs_(long *neqn, double *y, double *
 {
     /* Initialized data */
 
-    static double remin = 1e-12;
-    static long maxnfe = 3000;
+    double remin = 1e-12;
+    long maxnfe = 3000;
 
     /* System generated locals */
     long i__1;
     double d__1, d__2, d__3, d__4;
 
-    static double hmin, toln, epsp1, a;
-    static long k;
-    static double s, scale;
-    static long mflag;
-    static double eeoet, ae, ee;
-    static int hfaild;
-    static double dt, et, u26, esttol;
-    static int output;
-    static double eps, rer, tol, ypk;
+    double hmin, toln, epsp1, a;
+     long k;
+     double s, scale;
+     long mflag;
+     double eeoet, ae, ee;
+     int hfaild;
+     double dt, et, u26, esttol;
+     int output;
+     double eps, rer, tol, ypk;
 
 
 /*     fehlberg fourth-fifth order runge-kutta method */
@@ -903,8 +903,8 @@ double *f3, double *f4, double *f5, double *s)
     double d__1;
 
     /* Local variables */
-    static long k;
-    static double ch;
+    long k;
+    double ch;
 
 
 /*     fehlberg fourth-fifth order runge-kutta method */
