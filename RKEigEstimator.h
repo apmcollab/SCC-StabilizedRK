@@ -7,29 +7,28 @@
 #include <cmath>
 #include <vector>
 
-
-#include "GenEigUtility.h"
-#include "SVDutility.h"
-#include "ArrayStructure1D.h"
-#include "ArrayStructure2D.h"
-#include "DynamicVectorArray.h"
-
-
 #ifndef RK_EIG_ESTIMATOR_
 #define RK_EIG_ESTIMATOR_
 
+
+extern "C"  int dgelss_(long* m,  long* n, long* nrhs,double* a, long* lda, double* b, long* ldb, double* s,
+double* rcond, long* rank, double* work, long* lwork, long* info);
+
+
+
+extern "C" int dgeev_(char *jobvl, char *jobvr, long *n, double *a, long *lda, double *wr, double *wi, double *vl,
+long *ldvl, double *vr, long *ldvr, double *work, long *lwork, long *info);
+
 //
 /* 
-   This class creates an estimate of the dominant eigenvalues of the 
-   Jacobian associated with an ODE using procedure based on that 
-   described in the paper by Ekeland, Owren and Oines
-   "Stiffness Detection and Estimation of Dominant Spectra with 
-    Explicit Runge-Kutta Methods"
+	This class creates an estimate of the dominant eigenvalues of the
+	Jacobian associated with an ODE using procedure based on that
+	described in the paper by Ekeland, Owren and Oines
+	"Stiffness Detection and Estimation of Dominant Spectra with Explicit Runge-Kutta Methods"
     
-    ACM Transactios on Mathematical Software, Vol. 24, No. 4, Dec. 1998, 
-    Pg. 368-382
+    ACM Transactios on Mathematical Software, Vol. 24, No. 4, Dec. 1998,  Pg. 368-382
     
-    The procedure implemented here differs from that described in the paper
+	The procedure implemented here differs from that described in the paper
     in that a modified Gram-Schmidt is used to carry out the orthogonalization 
     and the accumulation of the upper Hessenberg matrix is accomplished without
     explicitly constructing the inverse of the Runge-Kutta coefficient matrix. 
@@ -86,14 +85,48 @@ public:
 // The ith column of this matrix corresponds to the coefficients used to 
 // accumulate the ith stage vector.
 // 
-void initialize(long RKstageOrder, DoubleArrayStructure2D& RKcoefficients)
+void initialize(long RKstageOrder, std::vector< std::vector<double> >& RKcoefficients)
 {
-	this->RKstageOrder               = RKstageOrder;   // Stage order of the RK method
-	this->A1                         = RKcoefficients; // Coefficients packed in format specified by Ekeland's paper
-	
+	this->RKstageOrder     = RKstageOrder; // Stage order of the RK method
+
     this->dependencyTol    =  1.0e-04;
     this->pseudoInverseTol =  1.0e-04;
-    
+
+	// Coefficients packed in format specified by Ekeland's paper
+	
+
+    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+
+    for(long j = 0; j < RKcoefficients.size(); j++)
+    {
+    for(long i = 0; i < RKcoefficients.size(); i++)
+    {
+    std::cout << RKcoefficients[i][j] << " ";
+    }
+    std::cout <<"\n";
+    }
+
+    std::cout << "xxxxxxxxxxxxxxxxxxxxxxxx" << std::endl;
+
+
+
+	A1.initialize(RKcoefficients);
+
+	std::cout << "ggggggggggggggggggggggg" << std::endl;
+
+    for(long j = 0; j < RKcoefficients.size(); j++)
+    {
+    for(long i = 0; i < RKcoefficients.size(); i++)
+    {
+    std::cout << A1(i,j) << " ";
+    }
+    std::cout <<"\n";
+    }
+
+    std::cout << "ggggggggggggggggg" << std::endl;
+
+
+
 	r.initialize(RKstageOrder,RKstageOrder);
 }
 
@@ -101,23 +134,24 @@ void initialize(long RKstageOrder, DoubleArrayStructure2D& RKcoefficients)
 // The input stages are defined without a dt multiplicative factor, e.g.
 // k[i] = f(y_n + dt*(sum_(j< i) a_(i,j)*k[j] )
 
-int estimateEigenvalues(std::vector < Vector* > k,
+void estimateEigenvalues(std::vector < Vector* > k,
 std::vector<double>& Wreal, std::vector<double>& Wimag,
 long& eigCount, double dt)
 {
 	int stageScalingFlag = 0;
 	double stageScaling  = 0.0;
-	return estimateEigenvalues(k,stageScalingFlag, stageScaling, Wreal, Wimag, eigCount,dt);
+
+	estimateEigenvalues(k,stageScalingFlag, stageScaling, Wreal, Wimag, eigCount,dt);
 }
 
-int estimateEigenvalues(std::vector < Vector* > k, double stageScaling, 
+void estimateEigenvalues(std::vector < Vector* > k, double stageScaling,
 std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double dt)
 {
 	int stageScalingFlag = 1;
-	return estimateEigenvalues(k,stageScalingFlag, stageScaling, Wreal, Wimag, eigCount,dt);
+	estimateEigenvalues(k,stageScalingFlag, stageScaling, Wreal, Wimag, eigCount,dt);
 }
 
-int estimateEigenvalues(std::vector < Vector* > k, int stageScalingFlag, double stageScaling, 
+void estimateEigenvalues(std::vector < Vector* > k, int stageScalingFlag, double stageScaling,
 std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double dt)
 {
     long   qSize = 0;
@@ -135,12 +169,17 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     for(j = 0; j < p; j++) 
     {
     	
-    if(j >= q.getSize()) 
+    if(j >= (long)q.size())
     {
     	if(j == 0)
-    	{q.initialize(1,*k[0]);}
+    	{
+    	q.clear();
+    	q.resize(1,*k[0]);
+    	}
     	else
-    	{q.expand(1);}
+    	{
+    	q.push_back(*k[0]);
+    	}
     }
     
     q[j] = *k[j];
@@ -163,8 +202,10 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     //
     rCopy.initialize(j+1,j+1);
     rCopy.setToValue(0.0);
-    rSingularValues.initialize(j+1);
-    rSingularValues.setToValue(0.0);
+
+    rSingularValues.resize(j+1);
+    std::fill(rSingularValues.begin(), rSingularValues.end(), 0.0);
+
     for(ii = 0; ii <= j; ii++)
     {
     for(jj = 0; jj <= j; jj++)
@@ -172,8 +213,8 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     rCopy(ii,jj) = r(ii,jj);
     }}
     
-    SVDutility::singularValues(rCopy.getDataPointer(),j+1,j+1,rSingularValues.getDataPointer());
-    if(rSingularValues(j)/rSingularValues(0) <  dependencyTol)
+    singularValues(rCopy.getDataPointer(),j+1,j+1,&rSingularValues[0]);
+    if(rSingularValues[j]/rSingularValues[0] <  dependencyTol)
     {
     qSize = j;
     break;
@@ -226,6 +267,7 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
 	{
 	Ktilde(0,j) -= r(0,0);
 	}
+
 
 //
 // Construct the transpose of 
@@ -296,6 +338,8 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     
 */
  
+
+
     for(j = 0; j < hSize; j++)
     {
     for(i = 0; i < hSize; i++)
@@ -308,7 +352,7 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     Z(i,j) *= 1.0/A1(i,i);
     }}
     
-   
+
     for(j = 0; j < hSize; j++)
     {
     for(i = 0; i < hSize; i++)
@@ -320,6 +364,8 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
     }
     Ht(i,j) *= 1.0/r(i,i);
     }}
+
+
    
     /*
     cout << " Z " << endl;
@@ -390,7 +436,7 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
         }
     */ 
     
-	info = GenEigUtility::computeEigenvalues(Ht.getDataPointer(),hSize, &Wreal[0], &Wimag[0]);
+	computeEigenvalues(Ht.getDataPointer(),hSize, &Wreal[0], &Wimag[0]);
 	
 	
 	for(i = 0; i < eigCount; i++)
@@ -398,8 +444,187 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
 	Wreal[i]*= 1.0/dt;
     Wimag[i]*= 1.0/dt;
 	}
-	return info;
 }
+
+    class DoubleArrayStructure2D
+    {
+    public:
+
+    DoubleArrayStructure2D() {rows = 0; cols = 0; data.clear();}
+
+    DoubleArrayStructure2D(long rows, long cols)
+    {
+    initialize(rows,cols);
+    }
+
+    void initialize()
+    {
+    rows = 0;
+    cols = 0;
+    data.clear();
+    }
+
+    void initialize(long rowSize, long colSize)
+    {
+    if(rowSize*colSize == 0){initialize(); return;}
+
+    rows = rowSize;
+    cols = colSize;
+    data.resize(rows*cols);
+    std::fill(data.begin(),data.end(),0.0);
+    }
+
+    void initialize(const std::vector< std::vector<double> >& A)
+    {
+    if(A.size() == 0) {initialize(); return;}
+    rows = A.size();
+    cols = A[0].size();
+
+    initialize(rows,cols);
+
+    for(long i = 0; i < rows; i++)
+    {
+    	for(long j = 0; j < cols; j++)
+    	{
+    		operator()(i,j) = A[i][j];
+    	}
+    }
+    }
+
+    double& operator()(long i, long j)
+    {
+
+    if((i > rows-1)||(j > cols -1))
+    {
+    std::cout << "Access error " << " i " << i << " j " << j << std::endl;
+    }
+    return data[i + j*rows];
+    }
+
+    const double& operator()(long i, long j) const
+    {
+
+    if((i > rows-1)||(j > cols -1))
+    {
+    std::cout << "Access error " << " i " << i << " j " << j << std::endl;
+    }
+
+    return data[i + j*rows];
+    }
+
+    void setToValue(double val)
+    {
+    std::fill(data.begin(),data.end(),val);
+    }
+
+    double* getDataPointer() {return &data[0];}
+
+    long rows;
+    long cols;
+    std::vector<double> data;
+    };
+
+
+void singularValues(double* A, long m, long n,double* singularValues)
+{
+    long i; long j;
+
+
+	double* Q = new double[m*n];
+
+	for(i = 0; i < m; i++)
+	{
+	for(j = 0; j < n; j++)
+	{
+	Q[i + j*m] = A[i + j*m];
+	}}
+
+	//for(size_t k = 0; k < (size_t)(m*n); ++k)
+	//{
+	//Q[k] = A[k];
+	//}
+
+    long maxDim = std::max(m,n);
+
+
+    long nrhs    = 0;  // just want singular values
+    long lda     = m;
+
+    double* Bptr = new double[maxDim];
+    long ldb     = maxDim;
+
+    double* SPtr = singularValues;
+
+    double rCond = -1.0;
+    long   rank  = 0;
+
+	long lwork   = 5*maxDim;
+    double* workPtr = new double[lwork];
+
+	long info    = 0;
+    dgelss_(&m,  &n, &nrhs,Q, &lda,Bptr, &ldb, SPtr, &rCond, &rank,
+    workPtr, &lwork, &info);
+
+    if(info != 0)
+    std::cerr << "Singular Value Computation Failed " << std::endl;
+//
+//  clean up
+//
+	delete [] workPtr;
+    delete [] Bptr;
+    delete [] Q;
+}
+
+void computeEigenvalues(double* Adata, long Asize, double* wReal, double* wImag)
+{
+	char jobvl        = 'N';
+	char jobvr        = 'N';
+
+	long            n  = Asize;
+	double*         a  = new double[n*n];
+
+	//
+	//  The matrix data is overwritten by the eigenvalue routine
+	//  so one must make a copy of it calling the eigensystem
+	//  routine. No need to worry about transposing because we aren't
+	//  computing the eigenvectors.
+	//
+
+	for(long i = 0; i < n*n; i++) {a[i] = Adata[i];}
+
+	long lda        = n;
+	std::vector<double> wr(n,0.0);
+	std::vector<double> wi(n,0.0);
+
+	double    vl  = 0.0;
+	double    vr  = 0.0;
+	long     ldvl   = 1;
+    long     ldvr   = 1;
+
+	long lwork      = 5*n;
+	double* work    = new double[lwork];
+	long info       = 0;
+
+	dgeev_(&jobvl, &jobvr, &n, a, &lda, &wr[0], &wi[0], &vl, &ldvl, &vr, &ldvr, work,&lwork, &info);
+
+    for(long i = 0; i < n; i++)
+    {
+    wReal[i] = wr[i];
+    wImag[i] = wi[i];
+    }
+
+	delete [] a;
+	delete [] work;
+
+	if(info != 0)
+	{
+	 std::cerr << " Eigenvalue routine dgeev (general matrix) failed " << std::endl;
+	 std::cerr << " Info Value: " << info << std::endl;
+     exit(0);
+	}
+}
+
+
 //
 //  Class data members
 //
@@ -407,21 +632,19 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
 	double       dependencyTol;
     double    pseudoInverseTol;
 	
-	DynamicVectorArray< Vector > q;
+	std::vector< Vector > q;
+
     DoubleArrayStructure2D Ht;
     DoubleArrayStructure2D r;
     DoubleArrayStructure2D A1;
     DoubleArrayStructure2D Ktilde;
     DoubleArrayStructure2D Z;
     
-    DoubleArrayStructure2D            rCopy;
-    DoubleArrayStructure1D  rSingularValues;
+    DoubleArrayStructure2D rCopy;
 
-    DoubleArrayStructure1D Wreal;
-	DoubleArrayStructure1D Wimag;
+    std::vector<double>   rSingularValues;
+
 	long eigCount;
-	
-	
 };
 
 #endif

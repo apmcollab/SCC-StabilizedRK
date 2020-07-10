@@ -29,14 +29,14 @@ public :
     double operator()(double realZ,double imagZ);
     double operator()(double realZ);
 
-    double** alphaCoeff;
-    double* FYk;
+    std::vector<std::vector<double> > alphaCoeff;
+
+    double*     FYk;
     long stageOrder;
     double    gamma;
     
     std::complex < double >* ZYk;
 
-    RKsteadyStateCoeff rkSteadyStateCoeff;
 };
 #endif
 

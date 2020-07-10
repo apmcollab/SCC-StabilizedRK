@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <vector>
 
 void RKsteadyStateCoeff::getTchebyShiftFactors(double M, double gamma,
 double& delta, double& beta, RKpolynomialFunction& ChebyPoly)
@@ -87,9 +88,9 @@ void createChebyshevPolynomials(RKpolynomialFunction* P, long maxDegree)
 
 RKcoefficients::RKcoefficients()
 {
-    alphaCoeff = 0;
     stageOrder = 0;
     gamma      = 0;
+    alphaCoeff.clear();
 }
 
 RKcoefficients::RKcoefficients(long stageOrder, double gamma)
@@ -97,111 +98,27 @@ RKcoefficients::RKcoefficients(long stageOrder, double gamma)
     this->stageOrder = stageOrder;
     this->gamma      = gamma;
 
-    long i;
-    alphaCoeff   = new double*[stageOrder];
-    for(i = 0; i < stageOrder; i++) alphaCoeff[i] = new double[stageOrder];
 
+    RKsteadyStateCoeff rkSteadyStateCoeff;
     rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma, alphaCoeff);
 }
 
 RKcoefficients::~RKcoefficients()
-{
-    long i;
-
-    if(alphaCoeff != 0) 
-    {
-    for(i = 0; i < stageOrder; i++) delete [] alphaCoeff[i];
-    delete [] alphaCoeff;
-    }
-}
+{}
 
 
 
-//
-// RKsteadyStateCoeff Static initializer
-//
 RKsteadyStateCoeff::RKsteadyStateCoeff()
-{
-	cacheStorageSize       = 100;
-	coeffCache             = new RKcoefficients*[100];
-	cacheSize              = 0;
-	cacheStorageIncrement  = 100;
-}
+{}
 
 RKsteadyStateCoeff::~RKsteadyStateCoeff()
-{
-	if(coeffCache != 0)
-	{
+{}
 
-    for(int i = 0; i < cacheSize; i++)
-    {delete coeffCache[i];}
-
-	delete [] coeffCache;
-	}
-}
-
-double** RKsteadyStateCoeff::getRKcoefficientsPtr(long stageOrder, 
-double gamma)
-{
-    long i;
-    //
-    // Check cache for coefficients
-    //
-    for(i = 0; i < cacheSize; i++)
-    {
-    if((stageOrder == coeffCache[i]->stageOrder)
-     &&(gamma      == coeffCache[i]->gamma))
-    {return coeffCache[i]->alphaCoeff;}
-    }
-    //
-    // Create new cache entry and 
-    // then return the coefficients
-    //
-    if(cacheSize + 1 > cacheStorageSize) expandCache(100);
-
-    coeffCache[cacheSize] = new RKcoefficients(stageOrder,gamma);
-    cacheSize++;
-
-    /*
-    long j;
-    for(j = 0; j < stageOrder; j++)
-    {
-    for(i = 0; i < stageOrder; i++)
-    {
-    printf("%10.7e  ",(coeffCache[cacheSize-1]->alphaCoeff)[i][j]);
-    }
-    printf("\n \n");
-    }
-    */
-    return coeffCache[cacheSize-1]->alphaCoeff;
-}
-
-void RKsteadyStateCoeff::expandCache(long storageIncrement)
-{
-    long i;
-
-    // allocate new cache pointer array 
-
-    long newSize              = cacheStorageSize + storageIncrement;
-    RKcoefficients** cachePtr = new RKcoefficients*[newSize];
-
-    // copy over elements
-    for(i = 0; i < cacheSize; i++) 
-    {cachePtr[i] = coeffCache[i];}
-
-    // remove existing elements
-    delete [] coeffCache;
-
-    // assign new pointer to old pointer
-    coeffCache      = cachePtr;
-
-    cacheStorageSize = newSize;
-}
-
-
+void RKsteadyStateCoeff::initialize()
+{}
 
 void RKsteadyStateCoeff::getRKcoefficients(long stageOrder, double gamma,
-double** alphaCoefficients) 
+std::vector< std::vector<double> >& alphaCoefficients)
 {
     long i;  long j; long k; 
 
@@ -248,6 +165,11 @@ double** alphaCoefficients)
 
     create2Darray(alphaMatrix,degree,degree);
     create2Darray(alphaRHS,degree,degree);
+
+
+    alphaCoefficients.clear();
+    alphaCoefficients.resize(degree);
+    for(size_t k = 0; k < degree; k++) {alphaCoefficients[k].resize(degree,0.0);}
 
     for(i = 0; i < degree; i++)
     {
@@ -464,10 +386,10 @@ double PprimeCondition::d1machForZeroin_(long *i)
 double PprimeCondition::getRoot(double* ax, double* bx, double *tol)
 {
 
-    static long c__4 = 4;
+    long c__4 = 4;
     double ret_val, d__1, d__2;
-    static double a, b, c__, d__, e, p, q, r__, s;
-    static double fa, fb, fc, xm, eps, tol1;
+    double a, b, c__, d__, e, p, q, r__, s;
+    double fa, fb, fc, xm, eps, tol1;
 
     eps = d1machForZeroin_(&c__4);
     tol1 = eps + 1.;

@@ -320,8 +320,8 @@ class SRKtimestepEstimator
     retVal = rkfMethod.advance(dt,t,y);
     if(retVal != 0)
     {
-    cout  << " RKF Method Error Encountered In SRKtimestepEstimator" << endl;
-    cout  << " Error Code : " << rkfMethod.getErrorCode() << endl;
+    std::cout  << " RKF Method Error Encountered In SRKtimestepEstimator" << std::endl;
+    std::cout  << " Error Code : " << rkfMethod.getErrorCode() << std::endl;
     exit(0);
     }
     if(y[1] < 0.0) 

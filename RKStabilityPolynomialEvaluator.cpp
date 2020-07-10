@@ -10,9 +10,9 @@ RKStabilityPolynomialEvaluator::RKStabilityPolynomialEvaluator()
 {
     this->stageOrder = 0;
     this->gamma      = 0;
-    FYk              = 0;
-    ZYk              = 0;
-    alphaCoeff       = 0;
+    FYk              = nullptr;
+    ZYk              = nullptr;
+    alphaCoeff.clear();
 }
 
 RKStabilityPolynomialEvaluator::RKStabilityPolynomialEvaluator(long stageOrder, double gamma)
@@ -21,35 +21,44 @@ RKStabilityPolynomialEvaluator::RKStabilityPolynomialEvaluator(long stageOrder, 
     this->gamma      = gamma;
     FYk              = new double[stageOrder];
     ZYk              = new std::complex< double >[stageOrder];
-    alphaCoeff       = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder,gamma);
+
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
+    rkSteadyStateCoeff.getRKcoefficients(stageOrder,gamma,alphaCoeff);
 }
 
 void RKStabilityPolynomialEvaluator::initialize()
 {
     this->stageOrder = 0;
     this->gamma      = 0;
-    if(FYk != 0)delete [] FYk;
-    if(ZYk != 0)delete [] ZYk;
-    FYk              = 0;
-    ZYk              = 0;
-    alphaCoeff       = 0;
+
+    if(FYk != nullptr) delete [] FYk;
+    if(ZYk != nullptr) delete [] ZYk;
+    FYk  = nullptr;
+    ZYk  = nullptr;
+    alphaCoeff.clear();
 }
 
 void RKStabilityPolynomialEvaluator::initialize(long stageOrder, double gamma)
 {
     this->stageOrder = stageOrder;
     this->gamma      = gamma;
-    if(FYk != 0)delete [] FYk;
-    if(ZYk != 0)delete [] ZYk;
+
+    if(FYk != nullptr) delete [] FYk;
+    if(ZYk != nullptr) delete [] ZYk;
+
     FYk              = new double[stageOrder];
     ZYk              = new std::complex<double>[stageOrder];
-    alphaCoeff       = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder,gamma);
+
+
+    RKsteadyStateCoeff rkSteadyStateCoeff;
+    rkSteadyStateCoeff.getRKcoefficients(stageOrder,gamma,alphaCoeff);
 }
 
 RKStabilityPolynomialEvaluator::~RKStabilityPolynomialEvaluator()
 {
-	if(FYk != 0) delete [] FYk;
-	if(ZYk != 0) delete [] ZYk;
+	if(FYk != nullptr) delete [] FYk;
+	if(ZYk != nullptr) delete [] ZYk;
 }
 
 //

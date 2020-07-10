@@ -28,6 +28,7 @@
    RKvector()                                            (null constructor)
    RKvector(const RKvector&)                             (copy constructor)
 
+   initialize()                                          (null initializer)
    initialize(const RKvector&)                           (copy initializer)
   
    operator =                                            (duplicate assignemnt)
@@ -35,8 +36,8 @@
    operator *(double alpha)                              (scalar multiplication)
 
    axpy(double alpha, RKvector& x)                       (*this =  alpha*x + *this)
-   norm2()                                                (2-norm of vector)
-   normInf()                                                (maxAbs-norm of vector)
+   norm2()                                               (2-norm of vector)
+   normInf()                                             (infinity-norm of vector)
    
    ############################################################################
    
@@ -76,38 +77,71 @@ public :
 //
 //              Good values for gamma are 1.5 <= gamma <= 1.75. 
 //   
-//              
+//
+
 StabilizedRK()
 {
-    this->stageOrder = 0;
-    this->gamma      = 0; 
-
-    alphaCoeff       = 0;
-    evaluationCount  = 0;
-    FYkArraySize      = 0;
-    FYk               = 0;
+    initialize();
 }
+
+// Copy constructor - creates duplicate
+// (including pointer to ODE operator)
+
+StabilizedRK(const StabilizedRK& R)
+{
+	stageOrder  = R.stageOrder;
+	gamma       = R.gamma;
+	alphaCoeff  = R.alphaCoeff;
+
+	ODEoperator = R.ODEoperator;
+
+	evaluationCount = R.evaluationCount;
+    FYk             = R.FYk;
+
+	Yn.initialize(R.Yn);
+    FYn.initialize(R.FYn);
+    Ytmp.initialize(R.Ytmp);
+    FYnsave.initialize(R.FYnsave);
+    Ynsave.initialize(R.Ynsave);
+}
+
+StabilizedRK(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
+{
+	initialize(stageOrder,gamma,y0,F);
+}
+
 
 ~StabilizedRK()
-{ 
-  long i; 
-  if(FYk != 0) 
-  {
-  for(i = 0; i < FYkArraySize; i++) {delete FYk[i];}
-  delete [] FYk;
-  }
-  
-}
+{}
 
-void initialize(long stageOrder, double gamma, 
-RKvector& y0, RKoperator& F)
+void initialize()
+{
+    stageOrder = 0;
+    gamma      = 0;
+    alphaCoeff.clear();
+
+    rkSteadyStateCoeff.initialize();
+
+	ODEoperator = nullptr;
+
+    evaluationCount = 0;
+
+    FYk.clear();
+
+	Yn.initialize();
+    FYn.initialize();
+    Ytmp.initialize();
+    FYnsave.initialize();
+    Ynsave.initialize();
+}
+void initialize(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
 {
     this->stageOrder = stageOrder;
     this->gamma      = gamma;
 
     evaluationCount  = 0;
  
-	ODEoperator = &F;            //  set operator
+	ODEoperator      = &F;       //  set operator
 
 	Yn.initialize(y0);           //  Solution 
     FYn.initialize(y0);          //  Residual
@@ -117,42 +151,15 @@ RKvector& y0, RKoperator& F)
 
     Ynsave.initialize(Yn);       // Rollback temporaries
     FYnsave.initialize(FYn);
+
+   createStageTemporaries(stageOrder);
+   rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma, alphaCoeff);
 }
 
 void createStageTemporaries(long stageOrder)
 {
-    if(FYkArraySize >= stageOrder) return;
-
-    long k;
-
-    RKvector** FYkPtr  = new RKvector*[stageOrder];
-   
-    //
-    // copy existing stage temporary pointers
-    //
-
-    for(k = 0; k < FYkArraySize; k++)
-    {
-    FYkPtr[k] = FYk[k];
-    }
-
-    //
-    // create new stage temporaries
-    //
-
-    for(k = FYkArraySize; k < stageOrder; k++)
-    {
-    FYkPtr[k] = new RKvector(Yn);
-    }
-    //
-    // remove old array of pointers 
-    //
-    if(FYk != 0) delete [] FYk;
-
-    // assign new array pointer
-
-    FYk = FYkPtr;
-    FYkArraySize = stageOrder;
+    if((long)FYk.size() >= stageOrder) return;
+    FYk.resize(stageOrder,Yn);
 }
 
 void setInitialCondition(RKvector &Y0)
@@ -163,6 +170,11 @@ void setInitialCondition(RKvector &Y0)
   FYnsave = FYn;
 }
 
+void setOperator(RKoperator& F)
+{
+	ODEoperator = &F;
+}
+
 void advance(double dt)
 {
     Ynsave  = Yn;     
@@ -170,8 +182,7 @@ void advance(double dt)
     advance(Ynsave, FYnsave, stageOrder, gamma, dt, Yn, FYn);
 }
 
-void advance(RKvector &Yin,  RKvector& FYin, double dt, 
-RKvector &Yout, RKvector& FYout)
+void advance(RKvector &Yin,  RKvector& FYin, double dt, RKvector &Yout, RKvector& FYout)
 {
     advance(Yin, FYin, stageOrder, gamma, dt, Yout, FYout);
 }
@@ -190,28 +201,33 @@ double dt, RKvector &Yout, RKvector& FYout)
 {
    long i; long k;
 
+   if((sOrder != stageOrder)||(sFactor != gamma))
+   {
    createStageTemporaries(sOrder);
-   alphaCoeff  = rkSteadyStateCoeff.getRKcoefficientsPtr(sOrder, sFactor);
+   rkSteadyStateCoeff.getRKcoefficients(sOrder, sFactor, alphaCoeff);
+   stageOrder = sOrder;
+   gamma      = sFactor;
+   }
 
-   *FYk[0] = FYin;
-   *FYk[0] *= dt;
+   FYk[0] = FYin;
+   FYk[0] *= dt;
 
    for(k = 1; k < sOrder; k++)
    {
    Ytmp = Yin;
    for(i = 0; i < k; i++)
    {
-     Ytmp.axpy(alphaCoeff[i][k-1],*FYk[i]);
+     Ytmp.axpy(alphaCoeff[i][k-1],FYk[i]);
    }
-   applyOp(Ytmp,*FYk[k]);
-   *FYk[k] *= dt;
+   applyOp(Ytmp,FYk[k]);
+   FYk[k] *= dt;
    }
 
    Ytmp = Yin;
 
    for(k = 0; k < sOrder; k++)
    {
-   Ytmp.axpy(alphaCoeff[k][sOrder-1],*FYk[k]);
+   Ytmp.axpy(alphaCoeff[k][sOrder-1],FYk[k]);
    }
 
    Yout = Ytmp;
@@ -221,11 +237,15 @@ double dt, RKvector &Yout, RKvector& FYout)
     applyOp(Yout,FYout);
 }
 
-    long getEvaluationCount()
-    {return evaluationCount;};
+long getEvaluationCount()
+{
+	 return evaluationCount;
+};
 
-    void resetEvaluationCount()
-    {evaluationCount = 0;}
+void resetEvaluationCount()
+{
+	evaluationCount = 0;
+}
 //
 //  applyOp(...) 
 //  applies the ODE operator and keeps track of how many times it's been
@@ -284,27 +304,23 @@ double getResidualNormMaxAbs()
 //
 //  Class variables for RK evolution 
 //
-    long  stageOrder;            // Stage order (number of stages ) 
-    double     gamma;            // Stability region from [-gamma*stageOrder*stageOrder,0]. 
-                                 // Need gamma <= 2
+    long  stageOrder;             // Stage order (number of stages )
+    double     gamma;             // Stability region from [-gamma*stageOrder*stageOrder,0].
+                                  // Need gamma <= 2
     
-    double** alphaCoeff;         // RK stage coefficients 
+    std::vector<std::vector<double>> alphaCoeff; // RK stage coefficients
 
-	RKoperator* ODEoperator;     // ODE
-    long        evaluationCount; // ODE apply operator count 
+	RKoperator* ODEoperator;       // ODE
+    long        evaluationCount;   // ODE apply operator count
 
+    RKvector                  Yn;  // Solution
+    RKvector                 FYn;  // Residual
 
-    RKvector             Yn;     // Solution
-    RKvector            FYn;     // Residual
+    RKvector                Ytmp;  // Temporary
+    std::vector<RKvector>    FYk;  // Array for stage components
 
-    RKvector            Ytmp;     // Temporary
-    RKvector**            FYk;     // Array for stage components
-    long         FYkArraySize;   
-
-    
-    RKvector           FYnsave; // Roll-back temporaries
-    RKvector           Ynsave;  // 
-
+    RKvector             FYnsave; // Roll-back temporaries
+    RKvector              Ynsave; //
 
     RKsteadyStateCoeff rkSteadyStateCoeff;
 };

@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 
 #ifndef RK_STEADY_STATE_COEFF_
@@ -132,34 +133,6 @@ class PprimeCondition
 
 
 
-class RKcoefficients;
-
-class RKsteadyStateCoeff
-{
-    public:
-
-    RKsteadyStateCoeff();
-    ~RKsteadyStateCoeff();
-
-    void getRKcoefficients(long stageOrder, double gamma, double** alphaCoeff);
-
-    double** getRKcoefficientsPtr(long stageOrder, double gamma);
-
-    private:
-
-    void getTchebyShiftFactors(double M, double gamma, double& delta,
-    double& beta,RKpolynomialFunction& Cheby);
-
-    void backSolve(long N, double* c, double** A);
-    void create2Darray(double**& a, long m, long n);
-    void delete2Darray(double**& a);
-
-    RKcoefficients** coeffCache;
-    long cacheSize;
-    long cacheStorageSize;
-    long cacheStorageIncrement;
-    void expandCache(long storageIncrement);
-};
 
 
 class RKcoefficients
@@ -171,13 +144,34 @@ class RKcoefficients
 
     ~RKcoefficients();
 
-    long     stageOrder;
-    double        gamma;
-    double** alphaCoeff;
-
-    RKsteadyStateCoeff rkSteadyStateCoeff;
+    long                                stageOrder;
+    double                                   gamma;
+    std::vector< std::vector <double> > alphaCoeff;
 };
 
+
+
+class RKsteadyStateCoeff
+{
+    public:
+
+    RKsteadyStateCoeff();
+    ~RKsteadyStateCoeff();
+
+    void initialize();
+
+    void getRKcoefficients(long stageOrder, double gamma,
+    std::vector< std::vector <double> >& alphaCoefficients);
+
+    private:
+
+    void getTchebyShiftFactors(double M, double gamma, double& delta,
+    double& beta,RKpolynomialFunction& Cheby);
+
+    void backSolve(long N, double* c, double** A);
+    void create2Darray(double**& a, long m, long n);
+    void delete2Darray(double**& a);
+};
 
 #endif
  

@@ -81,7 +81,7 @@ RKsteadyState() : stabilizedRKmethod()
     totalTime       = 0.0;
     initializeAdaptiveVariables();
 
-    srkTimestepEstimator = 0;
+    srkTimestepEstimator = nullptr;
     eigEstFlag           = 0;
     errorCheckType       = INFNORM;
     dtMaxReductionFactor = 0.95;
@@ -89,7 +89,7 @@ RKsteadyState() : stabilizedRKmethod()
 
 ~RKsteadyState()
 {
-    if(srkTimestepEstimator != 0) delete  srkTimestepEstimator;
+    if(srkTimestepEstimator != nullptr) delete  srkTimestepEstimator;
 }
 
 void initialize(long stageOrder, double gamma, 
@@ -756,18 +756,25 @@ void initializeEigRoutines()
 // 
 //  Set up RKEigEstimator 
 // 
-    double** alphaPtr = rkSteadyStateCoeff.getRKcoefficientsPtr(stageOrder, gamma);
-    long i; long j; 
-    
-    DoubleArrayStructure2D RKcoefficients(stageOrder-1,stageOrder-1);
-    for(i = 0; i < stageOrder-1; i++)
+    std::vector<std::vector<double>> alphaCoeff;
+
+    rkSteadyStateCoeff.getRKcoefficients(stageOrder, gamma,alphaCoeff);
+
+    std::vector< std::vector<double> > RKcoefficients;
+
+    RKcoefficients.resize((long)(stageOrder-1));
+    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(stageOrder-1,0.0);}
+
+    for(size_t i = 0; i < stageOrder-1; i++)
     {
-    for(j = 0; j < stageOrder-1; j++)
+    for(size_t j = 0; j < stageOrder-1; j++)
     {
-        RKcoefficients(i,j)    = alphaPtr[i][j];
+        RKcoefficients[i][j]    = alphaCoeff[i][j];
     }}
     
     rkEigEstimator.initialize(stageOrder,RKcoefficients);
+
+    if(srkTimestepEstimator != nullptr) delete  srkTimestepEstimator;
     srkTimestepEstimator = new SRKtimestepEstimator(stageOrder,gamma);
 }
 
@@ -779,10 +786,10 @@ void estimateEigenSystem(double dt)
     stageArrayPointers.clear();
     for(i = 0; i < stageOrder; i++) 
     {
-    stageArrayPointers.push_back(stabilizedRKmethod.FYk[i]);
+    stageArrayPointers.push_back(&stabilizedRKmethod.FYk[i]);
     }
     stageScaling = 1.0/dt;
-    info = rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
+    rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
 }
 
 double getEstimatedTimestep(double dt,double maximalDtBound)
@@ -838,6 +845,8 @@ double computeInitialTimestep(double dtInitial)
 
     return dt;
 }
+
+
     RKEigEstimator < RKvector >  rkEigEstimator;
     std::vector<double> Wreal;
     std::vector<double> Wimag;

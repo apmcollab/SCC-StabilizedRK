@@ -241,17 +241,22 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 // 
 //  Set up RKEigEstimator 
 // 
-  double** alphaPtr = rkSteadyStateCoeff.getRKcoefficientsPtr(rkStageOrder, rkGammaFactor);
+    std::vector<std::vector<double>> alphaCoeff;
+    rkSteadyStateCoeff.getRKcoefficients(rkStageOrder, rkGammaFactor,alphaCoeff);
 	long i; long j; 
 	
-	DoubleArrayStructure2D RKcoefficients(rkStageOrder-1,rkStageOrder-1);
-	for(i = 0; i < rkStageOrder-1; i++)
-	{
-	for(j = 0; j < rkStageOrder-1; j++)
-	{
-		RKcoefficients(i,j)    = alphaPtr[i][j];
-	}}
-	
+	std::vector< std::vector<double> > RKcoefficients;
+
+	RKcoefficients.resize(rkStageOrder-1);
+    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
+
+    for(i = 0; i < rkStageOrder-1; i++)
+    {
+    for(j = 0; j < rkStageOrder-1; j++)
+    {
+        RKcoefficients[i][j]    = alphaCoeff[i][j];
+    }}
+
 	rkEigEstimator.initialize(rkStageOrder,RKcoefficients);
 }
 
@@ -264,10 +269,11 @@ void estimateEigenSystem(double dt)
 	stageArrayPointers.clear();
 	for(i = 0; i < stageOrder; i++) 
     {
-    stageArrayPointers.push_back(stabilizedRKmethod.FYk[i]);
+    stageArrayPointers.push_back(&stabilizedRKmethod.FYk[i]);
     }
     stageScaling = 1.0/dt;
-    info = rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
+
+    rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
 }
 
 double getTimestep(double dt)
@@ -544,8 +550,9 @@ double dtMax, double tol, int errorCheckType)
 //
 //  Stabilized RK method instance and parameters
 //
-    long                                       stageOrder;          
-    double                                          gamma;      
+    long                                     stageOrder;
+    double                                   gamma;
+
     StabilizedRK<RKvector, RKoperator >      stabilizedRKmethod; 
     ClassicRK <RKvector, RKoperator >        classicRK;
 //
@@ -585,13 +592,13 @@ double dtMax, double tol, int errorCheckType)
     int             errorCheckType;
     
     
-    static void zeroTimestepError()
+    void zeroTimestepError()
     {
-	cout << "RKsteadyStateEE : Initial steady state evolution failed to detect any " << endl;
-	cout << "                  negative eigenvalues of linearized operator.        " << endl;
-	cout << "                                                                      " << endl;
-	cout << "     Try restarting with a smaller initial timestep.                  " << endl;
-	cout << "            XXX  Program Halted XXX "                                   << endl;
+	std::cout << "RKsteadyStateEE : Initial steady state evolution failed to detect any " << std::endl;
+	std::cout << "                  negative eigenvalues of linearized operator.        " << std::endl;
+	std::cout << "                                                                      " << std::endl;
+	std::cout << "     Try restarting with a smaller initial timestep.                  " << std::endl;
+	std::cout << "            XXX  Program Halted XXX "                                   << std::endl;
     }
 };
 #endif

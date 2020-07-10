@@ -207,17 +207,22 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 // 
 //  Set up RKEigEstimator 
 // 
-    double** alphaPtr = rkSteadyStateCoeff.getRKcoefficientsPtr(rkStageOrder, rkGammaFactor);
-	long i; long j; 
+    std::vector<std::vector<double>> alphaCoeff;
+    rkSteadyStateCoeff.getRKcoefficients(rkStageOrder, rkGammaFactor,alphaCoeff);
+
+	std::vector< std::vector<double> > RKcoefficients;
 	
-	DoubleArrayStructure2D RKcoefficients(rkStageOrder-1,rkStageOrder-1);
-	for(i = 0; i < rkStageOrder-1; i++)
-	{
-	for(j = 0; j < rkStageOrder-1; j++)
-	{
-		RKcoefficients(i,j)    = alphaPtr[i][j];
-	}}
-	
+	RKcoefficients.resize(rkStageOrder-1);
+    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
+
+    for(long i = 0; i < rkStageOrder-1; i++)
+    {
+    for(long j = 0; j < rkStageOrder-1; j++)
+    {
+        RKcoefficients[i][j]    = alphaCoeff[i][j];
+    }}
+
+
 	rkEigEstimator.initialize(rkStageOrder,RKcoefficients);
 }
 
@@ -296,7 +301,7 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     // Reestimate timestep
     //
     currentDt = getTimestep(dtInitial,maximalDtBound);
-    cout << " Estimated Timestep   : " << currentDt << endl;
+    std::cout << " Estimated Timestep   : " << currentDt << std::endl;
     //
     // Detected only positive eigenvalues, so reset to 
     // previous timestep.
@@ -375,13 +380,13 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     int             errorCheckType;
     
     
-    static void zeroTimestepError()
+    void zeroTimestepError()
     {
-	cout << "RKsteadyStateFixedStepEE : Initial steady state evolution failed to detect any " << endl;
-	cout << "                  negative eigenvalues of linearized operator.        " << endl;
-	cout << "                                                                      " << endl;
-	cout << "     Try restarting with a smaller initial timestep.                  " << endl;
-	cout << "            XXX  Program Halted XXX "                                   << endl;
+	std::cout << "RKsteadyStateFixedStepEE : Initial steady state evolution failed to detect any " << std::endl;
+	std::cout << "                  negative eigenvalues of linearized operator.        " << std::endl;
+	std::cout << "                                                                      " << std::endl;
+	std::cout << "     Try restarting with a smaller initial timestep.                  " << std::endl;
+	std::cout << "            XXX  Program Halted XXX "                                   << std::endl;
     }
 };
 #endif
