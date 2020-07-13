@@ -66,7 +66,7 @@ public :
 //              (1-3) methods work best, while high order methods
 //              (4-10) work better for mildly stiff, or stiff equations.
 //
-// RKgamma    = The factor that determinines the size of the stability
+// RKgamma    = The factor that determines the size of the stability
 //              region and the magnitude of the damping associated with of the
 //              stabilized method. (0 < RKgamma < 2.0) The stability interval is
 //              [-RKgamma*stageOrder*stageOrder, 0].
@@ -78,6 +78,39 @@ public :
 //              Good values for RKgamma are 1.5 <= RKgamma <= 1.75.
 //   
 //
+// If the s is the stage order of the method then
+// the coefficients of the RK method are assumed to be in an s X s array,
+// with the  upper left (s-1)X(s-1) block being the coefficients used to
+// determine the stages K[1] through K[s-1].
+//
+// The last column of the coefficient array stores the coefficients
+// of the linear combination of the stages used to construct the solution.
+//
+//
+//    | alpha[0][0] | alpha[0][1] | alpha[0][2] | .....   | alpha[0][s-2]   | alpha[0][s -1]  |
+//    |     0       | alpha[1][1] | alpha[1][2] | .....   | alpha[1][s-2]   | alpha[1][s -1]  |
+//    |     0       |      0      | alpha[2][2] | .....   | alpha[2][s-2]   | alpha[2][s -1]  |
+//    |     0       |      0      |       0     |         |                 |                 |
+//    |     0       |      0      |       0     |    0    | alpha[s-2][s-2] | alpha[s-2][s-1] |
+//    |                                                           0         | alpha[s-1][s-1] |
+//------------------------------------------------------------------------------------------------
+//  |      |              |                                     |                  |
+//
+// K[0]   K[1]           K[2]                                 K[s-1]              y_(n+1)
+//
+//
+// With this coefficient storage convention, to structure of the statments to advance the solution
+// one timestep has the form
+//
+// K[0] = F(yn)
+//
+// For j = 1 to s-1
+//
+// K[j] = F(y_n + dt*( sum_(0 <= i <= j-1)  alpha[i][j-1]*K[i] )
+//
+// y_(n+1) = y_(n) + dt* (sum(0 <= i <= s-1) alphaCoeff[i][s-1]*K[i] )
+//
+
 
 StabilizedRK()
 {

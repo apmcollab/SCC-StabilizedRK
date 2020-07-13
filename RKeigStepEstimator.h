@@ -55,7 +55,12 @@ void initializeEigRoutines()
 
     std::vector< std::vector<double> > RKcoefficients;
 
+    // Copy over the upper-left (stageOrder-1)X(stageOrder-1) block of coefficients
+    // as these are the coefficients used to determine the RK stages.
+
+
     RKcoefficients.resize((long)(stageOrder-1));
+
     for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(stageOrder-1,0.0);}
 
     for(size_t i = 0; i < stageOrder-1; i++)

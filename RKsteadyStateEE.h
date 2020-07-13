@@ -243,16 +243,19 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 // 
     std::vector<std::vector<double>> alphaCoeff;
     rkSteadyStateCoeff.getRKcoefficients(rkStageOrder, rkGammaFactor,alphaCoeff);
-	long i; long j; 
 	
+	// Copy over the upper-left (stageOrder-1)X(stageOrder-1) block of coefficients
+    // as these are the coefficients used to determine the RK stages.
+
+
 	std::vector< std::vector<double> > RKcoefficients;
 
 	RKcoefficients.resize(rkStageOrder-1);
     for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
 
-    for(i = 0; i < rkStageOrder-1; i++)
+    for(long i = 0; i < rkStageOrder-1; i++)
     {
-    for(j = 0; j < rkStageOrder-1; j++)
+    for(long j = 0; j < rkStageOrder-1; j++)
     {
         RKcoefficients[i][j]    = alphaCoeff[i][j];
     }}
