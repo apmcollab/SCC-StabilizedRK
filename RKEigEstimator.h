@@ -291,8 +291,6 @@ std::vector<double>& Wreal, std::vector<double>& Wimag, long& eigCount, double d
 // 
 	eigCount = hSize;
 
-    long info;
-    
 	computeEigenvalues(Ht.getDataPointer(),hSize, Wreal, Wimag);
 	
 	for(i = 0; i < eigCount; i++)

@@ -20,6 +20,9 @@
 #include <cmath>
 #include <vector>
 
+
+#include "StabilizedRKconstants.h"
+
 #include "RKsteadyStateCoeff.h"
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
@@ -83,7 +86,7 @@ RKsteadyStateFixedStepEE() : stabilizedRKmethod()
     eigEstFlag           = 0;
     srkTimestepEstimator = 0;
     
-    errorCheckType     = INFNORM;
+    errorCheckType     = RKnormType::INFNORM;
 }
 
 ~RKsteadyStateFixedStepEE()
@@ -213,7 +216,7 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 	std::vector< std::vector<double> > RKcoefficients;
 	
 	RKcoefficients.resize(rkStageOrder-1);
-    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
+    for(long i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
 
     for(long i = 0; i < rkStageOrder-1; i++)
     {
@@ -229,23 +232,20 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 
 void estimateEigenSystem(double dt)
 {
-	long   i;
-	int info;
 	
 	stageArrayPointers.clear();
-	for(i = 0; i < stageOrder; i++) 
+	for(long i = 0; i < stageOrder; i++)
     {
-    stageArrayPointers.push_back(stabilizedRKmethod.FYk[i]);
+    stageArrayPointers.push_back(&stabilizedRKmethod.FYk[i]);
     }
     stageScaling = 1.0/dt;
-    info = rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
+    rkEigEstimator.estimateEigenvalues(stageArrayPointers,stageScaling,Wreal,Wimag,eigCount,dt);
 }
 
 double getTimestep(double dt,double maximalDtBound)
 {
-	double dtTmp = dt;
 	double dtNew;
-	long i;
+
 	estimateEigenSystem(dt);
 	
     if(eigEstFlag == 1){srkTimestepEstimator->setVerboseFlag(1);}
@@ -257,27 +257,20 @@ double getTimestep(double dt,double maximalDtBound)
 	return dtNew;
 }
 
-int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
+int computeSteadyStateSolution(double dtInitial, double tol, RKnormType errorType)
 {
     double maximalDtBound = dtInitial;
-    double dtTemp;
-    double residualSave;
-    double growthMax  = 100000000.0;
-    double growthRate;
     double residualNorm2;
        
     errorCheckType    = errorType;
 	
     initializeRKeigEstimator(stageOrder, gamma);
 	
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
     
-    residualSave = residualNorm;
- 
-	
     totalTime = 0.0;
     stepCount = 0;
     
@@ -287,7 +280,7 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     totalTime += dtInitial;
     stepCount++;
         
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
@@ -295,13 +288,16 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     if(verboseFlag != 0)
     {
     residualNorm2 = getResidualNorm2();
-    printf("%-3d  %4.4e  %4.4e  %4.4e \n",stepCount, dtInitial,residualNorm,residualNorm2);
+    printf("%-3ld  %4.4e  %4.4e  %4.4e \n",stepCount, dtInitial,residualNorm,residualNorm2);
     }
     //
     // Reestimate timestep
     //
     currentDt = getTimestep(dtInitial,maximalDtBound);
+    if(verboseFlag != 0)
+    {
     std::cout << " Estimated Timestep   : " << currentDt << std::endl;
+    }
     //
     // Detected only positive eigenvalues, so reset to 
     // previous timestep.
@@ -310,13 +306,13 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     {
         ODEoperator->output(getStepCount(),totalTime,residualNorm,Yn);
     }
-    residualSave = residualNorm;
+
     }
 
     if(verboseFlag != 0)
     {
         printf("Final Residual             : %10.5e \n",residualNorm);
-        printf("Total Function Evaluations : %d     \n",stabilizedRKmethod.getEvaluationCount());
+        printf("Total Function Evaluations : %ld    \n",stabilizedRKmethod.getEvaluationCount());
         printf("Total Evolution Time       : %4.4f \n",getTotalTime());
     }
     
@@ -352,9 +348,7 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
 //
     long        evaluationCount; // ODE apply operator count 
     long        stepCount;
-    double      totalTime;   
-
-    enum {INFNORM, L2NORM};   
+    double      totalTime;
 
 	double                tol; // stopping tolerance
     long              stepMax; // upper limit on number of steps taken
@@ -377,7 +371,7 @@ int computeSteadyStateSolution(double dtInitial, double tol, int errorType)
     double    thetaReductionFactor;
     SRKtimestepEstimator* srkTimestepEstimator;
     
-    int             errorCheckType;
+    RKnormType     errorCheckType;
     
     
     void zeroTimestepError()

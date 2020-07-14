@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 
+#include "StabilizedRKconstants.h"
 #include "RKsteadyStateCoeff.h"
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
@@ -73,7 +74,7 @@ RKsteadyStateEE() : stabilizedRKmethod()
     dtMaxReductionFactor = 0.95;
     thetaReductionFactor = 0.0;
     
-    errorCheckType     = INFNORM;
+    errorCheckType     = RKnormType::INFNORM;
 }
 
 ~RKsteadyStateEE()
@@ -98,7 +99,7 @@ void initialize()
     dtMaxReductionFactor = 0.95;
     thetaReductionFactor = 0.0;
     
-    errorCheckType     = INFNORM;
+    errorCheckType     = RKnormType::INFNORM;
 }
 void initialize(long stageOrder, double gamma, RKvector& y0, RKoperator& F)
 {
@@ -168,17 +169,26 @@ double getTotalTime()
 void resetTotalTime()
 {totalTime = 0.0;}
 
-void setOutputFlag(int flag)
+void setOutputFlag(bool flag = true)
 {outputFlag = flag;};
+
+void clearOutputFlag()
+{outputFlag = false;};
 
 double getCurrentTimestep()
 {return currentDt;}
 
-void setEigEstOutputFlag(int flagVal)
+void setEigEstOutputFlag(bool flagVal = true)
 {eigEstFlag = flagVal;}
 
-void setVerboseFlag(int flagVal)
+void clearEigEstOutputFlag()
+{eigEstFlag = false;}
+
+void setVerboseFlag(bool flagVal = true)
 {verboseFlag = flagVal;}
+
+void clearVerboseFlag()
+{verboseFlag = false;}
 
 //
 // Returns the currently computed solution 
@@ -251,7 +261,7 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 	std::vector< std::vector<double> > RKcoefficients;
 
 	RKcoefficients.resize(rkStageOrder-1);
-    for(size_t i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
+    for(long i = 0; i < stageOrder-1; ++i){RKcoefficients[i].resize(rkStageOrder-1,0.0);}
 
     for(long i = 0; i < rkStageOrder-1; i++)
     {
@@ -266,11 +276,8 @@ void initializeRKeigEstimator(long rkStageOrder, double rkGammaFactor)
 
 void estimateEigenSystem(double dt)
 {
-	long   i;
-	int info;
-	
 	stageArrayPointers.clear();
-	for(i = 0; i < stageOrder; i++) 
+	for(long i = 0; i < stageOrder; i++)
     {
     stageArrayPointers.push_back(&stabilizedRKmethod.FYk[i]);
     }
@@ -297,7 +304,7 @@ double getTimestep(double dt)
     	totalTime -= dt;
     	rollBack();
     	
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = getResidualNorm2();}
@@ -352,7 +359,7 @@ double computeInitialTimestep()
     if(verboseFlag != 0)
 	{printf("\nXXXX     Starting dt found  %4.4e     XXXX\n\n",dt);}	
 	 
-	if(errorCheckType == INFNORM)
+	if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
 	{residualNorm   = getResidualNorm2();}
@@ -360,13 +367,12 @@ double computeInitialTimestep()
 	return dt;
 }
 
-int computeSteadyStateSolution(double dtInitial, double dtMax, double tol, int errorType)
+int computeSteadyStateSolution(double dtInitial, double dtMax, double tol, RKnormType errorType)
 {
     this->initialDt       = dtInitial;
     this->maximalDtBound  = dtInitial;
 
     double dtNew;
-    double reduceFactor = .75;
 
 
     int    rollBackFlag      = 0;
@@ -376,7 +382,7 @@ int computeSteadyStateSolution(double dtInitial, double dtMax, double tol, int e
     errorCheckType    = errorType;
     initializeRKeigEstimator(stageOrder, gamma);
 	
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
@@ -402,7 +408,7 @@ int computeSteadyStateSolution(double dtInitial, double dtMax, double tol, int e
     stepCount++;
     stepTaken++;
        
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
@@ -470,7 +476,7 @@ double dtMax, double tol, int errorCheckType)
 	
 	initializeRKeigEstimator(stageOrder, gamma);
 	
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
 	{residualNorm   = getResidualNorm2();}
@@ -506,7 +512,7 @@ double dtMax, double tol, int errorCheckType)
         //
         // Change timestep if required
         //
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
 	    {residualNorm   = getResidualNorm2();}
@@ -565,14 +571,12 @@ double dtMax, double tol, int errorCheckType)
 //
     long        evaluationCount; // ODE apply operator count 
     long        stepCount;
-    double      totalTime;   
-
-    enum {INFNORM, L2NORM};   
+    double      totalTime;
 
 	double                tol; // stopping tolerance
     long              stepMax; // upper limit on number of steps taken
-    int           verboseFlag;  // verbose output flag
-    int            outputFlag;  // flag indicating the invocation of state output 
+    bool           verboseFlag;  // verbose output flag
+    bool           outputFlag;  // flag indicating the invocation of state output
     
     
 
@@ -589,12 +593,12 @@ double dtMax, double tol, int errorCheckType)
     double              currentDt;
     double              initialDt;
     double         maximalDtBound;
-    long                eigEstFlag;
+    bool               eigEstFlag;
     double    dtMaxReductionFactor; 
     double    thetaReductionFactor;
     SRKtimestepEstimator* srkTimestepEstimator;
     
-    int             errorCheckType;
+    RKnormType       errorCheckType;
     
     
     void zeroTimestepError()

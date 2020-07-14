@@ -20,6 +20,8 @@
 // 02/24/06 Added code to improve convergence for oscillatory systems
 //###############################################################
 //
+
+#include "StabilizedRKconstants.h"
 #include "RKsteadyStateCoeff.h"
 #include "StabilizedRK.h"
 #include "ClassicRK.h"
@@ -77,7 +79,7 @@ RKsteadyState() : stabilizedRKmethod()
     stepCount       = 0;
     totalTime       = 0.0;
     initializeAdaptiveVariables();
-    errorCheckType       = RKnormType::INFNORM;
+    errorCheckType  = RKnormType::INFNORM;
 }
 
 ~RKsteadyState()
@@ -140,9 +142,14 @@ double getTotalTime()
 void resetTotalTime()
 {totalTime = 0.0;}
 
-void setOutputFlag(int flag)
+void setOutputFlag(bool flag = true)
 {
     outputFlag = flag;
+};
+
+void clearOutputFlag()
+{
+    outputFlag = false;
 };
 
 //
@@ -192,9 +199,14 @@ double getResidualNorm()
 }
 
 
-void setVerboseFlag(int flagVal)
+void setVerboseFlag(bool flagVal = true)
 {
     verboseFlag = flagVal;
+}
+
+void clearVerboseFlag()
+{
+    verboseFlag = false;
 }
 //
 // Sets the maximial iterations used in the adaptive time-stepping 
@@ -459,7 +471,6 @@ long maxReductions,RKnormType errorCheckType, double& finalTimestep)
 {
     long reductionCount;
     long reductionIncrement;
-    double maximalDtBound = dt;
     
     this->errorCheckType = errorCheckType;
     if(errorCheckType == RKnormType::INFNORM)
@@ -705,8 +716,8 @@ long maxReductions,long reduceCountSwitch, RKnormType errorCheckType, double& fi
     double             alpha2; // default timestep increment factor
     double              beta1; // default timestep decrement factor
 
-    int           verboseFlag;  // verbose output flag
-    int            outputFlag;  // flag indicating the invocation of state output 
+    bool           verboseFlag;  // verbose output flag
+    bool           outputFlag;  // flag indicating the invocation of state output
 };
 #endif
 
