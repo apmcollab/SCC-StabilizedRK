@@ -10,9 +10,9 @@ In addition to classes for constructing the coefficients of the stabilized Runge
 ### Prerequisites
 C++11
 ### Versioning
-Release : 1.0.1
+Release : 1.0.2
 ### Date 
-July 13, 2020 
+July 14, 2020 
 ### Authors
 Chris Anderson
 ### License
