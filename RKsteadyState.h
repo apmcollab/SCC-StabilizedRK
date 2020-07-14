@@ -285,7 +285,6 @@ void computeSteadyStateSolution(double initialTimestep, double tol,  RKnormType 
     long constCount    = 0;
     long rollBackCount = 0;
     double dtStar;
-    long step = 0;
     long invalidStep = 0;
 
     resetStepCount();

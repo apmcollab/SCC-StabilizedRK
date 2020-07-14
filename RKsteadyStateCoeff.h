@@ -150,7 +150,7 @@ void getRKcoefficients(long stageOrder, double gamma, std::vector< std::vector<d
 
     alphaCoefficients.clear();
     alphaCoefficients.resize(degree);
-    for(size_t k = 0; k < degree; k++) {alphaCoefficients[k].resize(degree,0.0);}
+    for(long k = 0; k < degree; k++) {alphaCoefficients[k].resize(degree,0.0);}
 
     for(i = 0; i < degree; i++)
     {
