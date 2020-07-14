@@ -77,7 +77,7 @@ RKsteadyState() : stabilizedRKmethod()
     stepCount       = 0;
     totalTime       = 0.0;
     initializeAdaptiveVariables();
-    errorCheckType       = INFNORM;
+    errorCheckType       = RKnormType::INFNORM;
 }
 
 ~RKsteadyState()
@@ -108,7 +108,7 @@ RKvector& y0, RKoperator& F)
     Ynsave.initialize(Yn);       // Initialize rollback variables 
     FYnsave.initialize(FYn);
     
-    errorCheckType = INFNORM;
+    errorCheckType = RKnormType::INFNORM;
 }
 
 //
@@ -206,7 +206,7 @@ void setMaximalIterations(long maxIter)
 }
 //
 // Set the maximial number of rollbacks that will occur with any
-// given timestep. If the number of rollbacks exceedes this 
+// given timestep. If the number of rollbaCOMPONENTS_STABILIZEDRK_STABILIZEDRKCONSTANTS_H_cks exceedes this
 // maximal count; then the algorithm just continues with the current
 // step. 
 // 
@@ -264,8 +264,7 @@ void initializeAdaptiveVariables()
 // The timestep adaptation is done using the 2-norm, while the
 // stopping condition can be either the 2-norm or the inf-norm.
 //
-void computeSteadyStateSolution(double initialTimestep, double tol, 
-int errorCheckType)
+void computeSteadyStateSolution(double initialTimestep, double tol,  RKnormType errorCheckType)
 {
     double dt;
     double residNorm1; 
@@ -278,7 +277,7 @@ int errorCheckType)
 
     residNorm1   = getResidualNorm2();
 
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = residNorm1;}
@@ -341,7 +340,7 @@ int errorCheckType)
         // Update residual
         //
 
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = residNorm1;}
@@ -366,11 +365,10 @@ int errorCheckType)
         }
 }
 
-void computeSteadyStateSolutionFixedStep(double dt, double tol, 
-int errorCheckType)
+void computeSteadyStateSolutionFixedStep(double dt, double tol, RKnormType errorCheckType)
 {
     this->errorCheckType = errorCheckType;
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
@@ -384,7 +382,7 @@ int errorCheckType)
         totalTime += dt;
         stepCount++;
 
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = getResidualNorm2();}
@@ -458,14 +456,14 @@ int getMonotoneTimestep(double& currentDt, double& currentResidual,
 }
 
 int computeSteadyStateSolutionFixedStepMonotone(double dt, double tol, double reduceFactor,
-long maxReductions,int errorCheckType, double& finalTimestep)
+long maxReductions,RKnormType errorCheckType, double& finalTimestep)
 {
     long reductionCount;
     long reductionIncrement;
     double maximalDtBound = dt;
     
     this->errorCheckType = errorCheckType;
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = getResidualNorm2();}
@@ -486,7 +484,7 @@ long maxReductions,int errorCheckType, double& finalTimestep)
         totalTime += dt;
         stepCount++;
 
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = getResidualNorm2();}
@@ -564,7 +562,7 @@ int getClassicRKtimestep(double& currentDt, double& currentResidual,
 // scheme.
 //
 int computeSteadyStateMonotoneOSC(double dt, double tol, double reduceFactor,
-long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTimestep)
+long maxReductions,long reduceCountSwitch, RKnormType errorCheckType, double& finalTimestep)
 {
     double residualNormL2;
     long reductionCount;
@@ -575,7 +573,7 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
     residualNormL2   = getResidualNorm2();
 
     this->errorCheckType = errorCheckType;
-    if(errorCheckType == INFNORM)
+    if(errorCheckType == RKnormType::INFNORM)
     {residualNorm   = getResidualNormMaxAbs();}
     else
     {residualNorm   = residualNormL2;}
@@ -593,7 +591,7 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
         stepCount++;
 
         residualNormL2   = getResidualNorm2();
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = residualNormL2;}
@@ -631,7 +629,7 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
         stepCount++;
 
         residualNormL2   = getResidualNorm2();
-        if(errorCheckType == INFNORM)
+        if(errorCheckType == RKnormType::INFNORM)
         {residualNorm   = getResidualNormMaxAbs();}
         else
         {residualNorm   = residualNormL2;}
@@ -691,12 +689,10 @@ long maxReductions,long reduceCountSwitch, int errorCheckType, double& finalTime
 //
 //  Adaptive method variables
 //
-    int         errorCheckType;
+    RKnormType  errorCheckType;
     long        evaluationCount; // ODE apply operator count 
     long        stepCount;
-    double      totalTime;   
-
-    enum {INFNORM, L2NORM};   
+    double      totalTime;
 
     double                tol; // stopping tolerance
     long              stepMax; // upper limit on number of steps taken
