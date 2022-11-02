@@ -93,11 +93,11 @@ RKpolynomialFunction differentiate()
 
 RKpolynomialFunction operator=(const RKpolynomialFunction& P)
 {
-    if(this == &P) return *this;                   // return if already =
-    if(a != nullptr) delete[] a;                         // remove "this" coefficients
-    degree = P.degree;                             // copy degree
-    a = new double[degree + 1];                    // allocate space for new coefficients
-    for(int i=0; i < degree+1; i++) a[i] = P.a[i]; // copy over coefficients
+    if(this == &P)   {return *this;}                 // return if already =
+    if(a != nullptr) {delete[] a;}                   // remove "this" coefficients
+    degree = P.degree;                               // copy degree
+    a = new double[degree + 1];                      // allocate space for new coefficients
+    for(int i=0; i < degree+1; i++) {a[i] = P.a[i];} // copy over coefficients
     return *this;
 }
 
@@ -197,7 +197,7 @@ RKpolynomialFunction operator*(double alpha)
 {
     RKpolynomialFunction R(*this);
    long i;
-   for(i =0; i <= degree; i++) R[i] = alpha*R[i];
+   for(i =0; i <= degree; i++) {R[i] = alpha*R[i];}
    return R;
 
 }
@@ -205,7 +205,7 @@ RKpolynomialFunction operator/(double alpha)
 {
     RKpolynomialFunction R(*this);
    long i;
-   for(i =0; i <= degree; i++) R[i] = R[i]/alpha;
+   for(i =0; i <= degree; i++) {R[i] = R[i]/alpha;}
    return R;
 
 }
@@ -213,7 +213,7 @@ friend RKpolynomialFunction operator*(double alpha, const RKpolynomialFunction& 
 {
    RKpolynomialFunction R(P);
    long i;
-   for(i =0; i <= P.degree; i++) R[i] = alpha*R[i];
+   for(i =0; i <= P.degree; i++) {R[i] = alpha*R[i];}
    return R;
 }
 
@@ -259,10 +259,11 @@ friend std::ostream& operator <<(std::ostream& outStream, const RKpolynomialFunc
     if(P.degree >= 1)
     {
     for(i = 1; i <= P.degree; i++)
-    outStream << " + " << std::setw(2) << P.a[i] << "x^";
+    {outStream << " + " << std::setw(2) << P.a[i] << "x^";
     outStream.setf(std::ios::left);
     outStream << std::setw(2) << i;
     outStream.setf(std::ios::right);
+    }
     }
     return outStream;
 }
@@ -271,22 +272,22 @@ friend std::ostream& operator <<(std::ostream& outStream, const RKpolynomialFunc
 //
 void initialize()
 {
-    if(a != nullptr) delete [] a;
+    if(a != nullptr) {delete [] a;}
     degree = -1;
     a      =  nullptr;
 }
 
 void initialize(const RKpolynomialFunction& P)
 {
-    if(a != nullptr) delete [] a;
+    if(a != nullptr) {delete [] a;}
     degree = P.degree;                             // copy degree
     a = new double[degree + 1];                    // allocate space for new coefficients
-    for(int i=0; i < degree+1; i++) a[i] = P.a[i]; // copy over coefficients
+    for(int i=0; i < degree+1; i++) {a[i] = P.a[i];} // copy over coefficients
 }
 
 void initialize(int deg)
 {
-    if(a != nullptr) delete [] a;
+    if(a != nullptr) {delete [] a;}
     degree = deg;
     a      = new double[degree+1];
     int i;
@@ -298,7 +299,7 @@ void initialize(int deg)
 
 void initialize(int n, double coefficients[])
 {
-    if(a != nullptr) delete [] a;
+    if(a != nullptr) {delete [] a;}
     degree = n;
     a      = new double[degree+1];
     int i;
@@ -314,14 +315,14 @@ void resizeTo(int n)
     long i;
     if(n <= degree)
     {
-    for(i = 0; i <= n; i++)newCoefficients[i] = a[i];
+    for(i = 0; i <= n; i++){newCoefficients[i] = a[i];}
     }
     else
     {
-    for(i = 0; i <= degree; i++) newCoefficients[i] = a[i];
-    for(i = degree + 1; i <= n; i++) newCoefficients[i] = 0.0;
+    for(i = 0; i <= degree; i++)     {newCoefficients[i] = a[i];}
+    for(i = degree + 1; i <= n; i++) {newCoefficients[i] = 0.0;}
     }
-    if(a != nullptr) delete [] a;
+    if(a != nullptr) {delete [] a;}
     a       = newCoefficients;
     degree = n;
 }
@@ -332,7 +333,7 @@ int getDegree() const
      int deg = 0;
      for(i = degree; i >= 0; i--)
      {
-     if((deg == 0)&&(a[i] != 0.0)) deg = i;
+     if((deg == 0)&&(a[i] != 0.0)) {deg = i;}
      }
      return deg;
 }

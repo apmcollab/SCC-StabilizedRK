@@ -429,7 +429,7 @@ int getMonotoneTimestep(double& currentDt, double& currentResidual,
 
     reductionIncrement = 0;
 
-    if(step == 0) residualOld  = currentResidual;
+    if(step == 0) {residualOld  = currentResidual;}
     if(step == 1) {d1 = currentResidual - residualOld;}
     if(step == 2) {d2 = currentResidual - residualOld;}
     if(step >= 3) {d3 = currentResidual - residualOld;}
@@ -519,7 +519,7 @@ long maxReductions,RKnormType errorCheckType, double& finalTimestep)
     }
 
     finalTimestep    = dt;
-    if(reductionCount == maxReductions) return 1;
+    if(reductionCount == maxReductions) {return 1;}
 
     return 0;
 }
@@ -536,7 +536,7 @@ int getClassicRKtimestep(double& currentDt, double& currentResidual,
 
     reductionIncrement = 0;
 
-    if(step == 0) residualOld  = currentResidual;
+    if(step == 0) {residualOld  = currentResidual;}
     if(step == 1) {d1 = currentResidual - residualOld;}
     if(step == 2) {d2 = currentResidual - residualOld;}
     if(step >= 3) {d3 = currentResidual - residualOld;}
@@ -661,7 +661,7 @@ long maxReductions,long reduceCountSwitch, RKnormType errorCheckType, double& fi
     }
 
     finalTimestep    = dt;
-    if(reductionCount == maxReductions) return 1;
+    if(reductionCount == maxReductions) {return 1;}
 
     return 0;
 }

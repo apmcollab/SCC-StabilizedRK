@@ -116,8 +116,8 @@ double getRoot(double* ax, double* bx, double *tol)
     fa = this->operator()(a);
     fb = this->operator()(b);
 
-    if(std::abs(fa) < *tol) return a;
-    if(std::abs(fb) < *tol) return b;
+    if(std::abs(fa) < *tol) {return a;}
+    if(std::abs(fb) < *tol) {return b;}
 /*     check that f(ax) and f(bx) have different signs */
     if (fa == 0. || fb == 0.) {
 	goto L20;

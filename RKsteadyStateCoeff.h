@@ -285,9 +285,9 @@ void getTchebyShiftFactors(double M, double gamma, double& delta, double& beta, 
 
     if(std::abs(gamma-2.0) > tolerance)
     {
-    if(gamma <  1.0) b = 2.0/gamma;
-    if(gamma >= 1.0) b = gamma*2.0;
-    if(gamma >    M) b = M-M/10.0;
+    if(gamma <  1.0) {b = 2.0/gamma;}
+    if(gamma >= 1.0) {b = gamma*2.0;}
+    if(gamma >    M) {b = M-M/10.0;}
 
 	delta = Pdelta.getRoot(&a, &b,&tolerance);
     }

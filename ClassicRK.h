@@ -159,8 +159,8 @@ private :
 //
 void setRKcoefficients()
 {
-    if(rkOrder < 1) rkOrder = 1;
-    if(rkOrder > 4) rkOrder = 4;
+    if(rkOrder < 1) {rkOrder = 1;}
+    if(rkOrder > 4) {rkOrder = 4;}
 
     switch(rkOrder)
     {

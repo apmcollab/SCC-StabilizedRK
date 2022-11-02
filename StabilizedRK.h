@@ -191,7 +191,7 @@ void initialize(long stageOrder, double RKgamma, RKvector& y0, RKoperator& F)
 
 void createStageTemporaries(long stageOrder)
 {
-    if((long)FYk.size() >= stageOrder) return;
+    if((long)FYk.size() >= stageOrder) {return;}
     FYk.resize(stageOrder,Yn);
 }
 
