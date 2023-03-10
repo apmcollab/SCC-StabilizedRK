@@ -78,6 +78,7 @@ RKsteadyState() : stabilizedRKmethod()
     evaluationCount = 0;
     stepCount       = 0;
     totalTime       = 0.0;
+    finalRKtimestep = 0.0;
     initializeAdaptiveVariables();
     errorCheckType  = RKnormType::INFNORM;
 }
@@ -110,7 +111,8 @@ RKvector& y0, RKoperator& F)
     Ynsave.initialize(Yn);       // Initialize rollback variables 
     FYnsave.initialize(FYn);
     
-    errorCheckType = RKnormType::INFNORM;
+    errorCheckType  = RKnormType::INFNORM;
+    finalRKtimestep = 0.0;
 }
 
 //
@@ -141,6 +143,11 @@ double getTotalTime()
 
 void resetTotalTime()
 {totalTime = 0.0;}
+
+double getFinalTimestep()
+{
+	return finalRKtimestep;
+}
 
 void setOutputFlag(bool flag = true)
 {
@@ -282,7 +289,8 @@ void computeSteadyStateSolution(double initialTimestep, double tol,  RKnormType 
     double residNorm1; 
     double residNorm2;
 
-    dt        = initialTimestep;
+    dt               = initialTimestep;
+    finalRKtimestep = dt;
     initFlag  = 1;
     totalTime = 0.0;
     this->errorCheckType = errorCheckType;
@@ -374,6 +382,10 @@ void computeSteadyStateSolution(double initialTimestep, double tol,  RKnormType 
         printf("Total Steps : %ld  Invalid Steps : %ld \n",getStepCount(),invalidStep);
         printf("Total Evolution Time       : %4.4f \n",getTotalTime());
         }
+        //
+        // capture final timestep
+        //
+        finalRKtimestep = dt;
 }
 
 void computeSteadyStateSolutionFixedStep(double dt, double tol, RKnormType errorCheckType)
@@ -415,6 +427,11 @@ void computeSteadyStateSolutionFixedStep(double dt, double tol, RKnormType error
         printf("Total Function Evaluations : %ld     \n",stabilizedRKmethod.getEvaluationCount());
         printf("Total Evolution Time       : %4.4f \n",getTotalTime());
     }
+
+    //
+    // capture final timestep
+    //
+   finalRKtimestep = dt;
 }
 
 
@@ -518,7 +535,9 @@ long maxReductions,RKnormType errorCheckType, double& finalTimestep)
         printf("Total Evolution Time       : %4.4f \n",getTotalTime());
     }
 
-    finalTimestep    = dt;
+    finalTimestep         = dt;
+    this->finalRKtimestep = dt;
+
     if(reductionCount == maxReductions) {return 1;}
 
     return 0;
@@ -661,6 +680,7 @@ long maxReductions,long reduceCountSwitch, RKnormType errorCheckType, double& fi
     }
 
     finalTimestep    = dt;
+    this->finalRKtimestep = dt;
     if(reductionCount == maxReductions) {return 1;}
 
     return 0;
@@ -701,8 +721,9 @@ long maxReductions,long reduceCountSwitch, RKnormType errorCheckType, double& fi
 //
     RKnormType  errorCheckType;
     long        evaluationCount; // ODE apply operator count 
-    long        stepCount;
-    double      totalTime;
+    long           stepCount;
+    double         totalTime;
+    double   finalRKtimestep;
 
     double                tol; // stopping tolerance
     long              stepMax; // upper limit on number of steps taken
